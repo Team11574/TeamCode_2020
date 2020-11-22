@@ -115,15 +115,7 @@ public class opNoDist extends OpMode
 
         //telemetry.addData("power",Robot.power_foundation);
         buttonControl(); //do button control stuff
-        if(pistonPos == 0) {
-            Robot.pistonClose();
-        }
-        if(pistonPos == 1) {
-            Robot.pistonHome();
-        }
-        if(pistonPos == 2) {
-            Robot.pistonOpen();
-        }
+
         //test if block already there
 
         //left is intake
@@ -271,20 +263,20 @@ public class opNoDist extends OpMode
     }
     public void buttonControl() {
         if (Robot.gamepad1.y) {
-            Robot.capStoneOut();
-        }
-        else {
-            Robot.capStoneStop();
-        }
-        if(Robot.gamepad1.dpad_down) {
-            Robot.runServoDown();
-        }
-        else if (Robot.gamepad1.dpad_up) {
-            Robot.runServoUp();
+
         }
         else {
 
-            Robot.stopServo();
+        }
+        if(Robot.gamepad1.dpad_down) {
+
+        }
+        else if (Robot.gamepad1.dpad_up) {
+
+        }
+        else {
+
+
         }
         if (Robot.gamepad1.dpad_left){
             if ( !dpad_left ) {
