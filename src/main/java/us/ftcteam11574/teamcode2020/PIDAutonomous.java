@@ -85,7 +85,7 @@ public class PIDAutonomous extends LinearOpMode {
         Kick = hardwareMap.get(CRServo.class, "Kick");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
-        //Set intial position
+        //Set initial position
         Pose2d startPose = new Pose2d(-36, 52, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
 
