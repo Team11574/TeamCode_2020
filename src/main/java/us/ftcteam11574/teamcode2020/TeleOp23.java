@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -40,6 +41,8 @@ import com.qualcomm.robotcore.util.Range;
 import java.security.CryptoPrimitive;
 import java.security.DomainCombiner;
 import java.util.ArrayList;
+
+import static android.os.SystemClock.sleep;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -68,7 +71,7 @@ public class TeleOp23 extends OpMode
     private DcMotor Flywheel = null;
     private CRServo LeftIn = null;
     private CRServo RightIn = null;
-    private Servo Kick = null;
+    private CRServo Kick = null;
     private double FlywheelPower;
 
     /*
@@ -88,7 +91,7 @@ public class TeleOp23 extends OpMode
         Intake = hardwareMap.get(DcMotor.class, "Intake");
         LeftIn = hardwareMap.get(CRServo.class, "LeftIn");
         RightIn = hardwareMap.get(CRServo.class, "RightIn");
-        Kick = hardwareMap.get(Servo.class, "Kick");
+        Kick = hardwareMap.get(CRServo.class, "Kick");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
 
@@ -137,19 +140,24 @@ public class TeleOp23 extends OpMode
         //Always on intake
         Intake.setPower(-0.8);
 
-        while (gamepad2.a){
-            LeftIn.setPower(1);
-            RightIn.setPower(1);
-        }
-        while(gamepad2.b){
-            LeftIn.setPower(-1);
-            RightIn.setPower(-1);
+        if(gamepad2.a){
+            LeftIn.setPower(1.0);
+            RightIn.setPower(1.0);
+        }else if(gamepad2.b){
+            LeftIn.setPower(-1.0);
+            RightIn.setPower(-1.0);
+        }else{
+            LeftIn.setPower(0.0);
+            RightIn.setPower(0.0);
         }
 
         if(gamepad2.y){
-            Kick.setPosition(0.3);
+            Kick.setPower(1.0);
         }
-        Kick.setPosition(0.6);
+        if(gamepad2.x){
+            Kick.setPower(0.0);
+        }
+
 
 
         // Show the elapsed game time and wheel power.
