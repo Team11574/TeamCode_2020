@@ -1,9 +1,11 @@
 package us.ftcteam11574.teamcode2020;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
 import java.lang.Math;
 //Configuration looks like this
 // \/
 // /\
-
+@Disabled
 public class motorPower {
     //pretty much everythign static so it can be accessed without instantiating a <Robotics> object
     /*
