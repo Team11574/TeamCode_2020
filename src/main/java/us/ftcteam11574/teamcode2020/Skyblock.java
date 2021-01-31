@@ -8,9 +8,11 @@
 package us.ftcteam11574.teamcode2020;
 
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
 import java.util.Arrays;
 
-
+@Disabled
 class Skyblock {
     static final int dwn_sample = 3; //3 probably works best
     static final int a = 30/dwn_sample; //size of read of pixels

@@ -29,6 +29,7 @@
 
 package us.ftcteam11574.teamcode2020;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -49,7 +50,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-
+@Disabled
 @TeleOp(name="opNoDist (USE THIS)", group="Iterative Opmode")
 
 public class opNoDist extends OpMode
@@ -189,27 +190,18 @@ public class opNoDist extends OpMode
             //maybe need to make the turn less dominant in the equation
             double mult = 1;
             Robot.setMotors(nvx,nvy,nrot*mult,max_mode);
-            //only going from -90 to 90 for some reason, getting to zero at two different places
-            double[] powers = motorPower.calcMotorsFull(nvx, nvy, nrot);//can also calc max, which always goes the fastest
-            //telemetry.addData("Ang of right stick",ang * 180/Math.PI);
-            /*
-            telemetry.addData("Ang of left stick",ang_rot * 180/Math.PI); //wait, how did this get to 270?
-            telemetry.addData("Info", ("Goal rot _ang: " + goal_rot_ang * 180/Math.PI));
-            telemetry.addData("Motors", ("Vx: " + nvx + "----Vy" + nvy + "---Rot" + nrot));
-            telemetry.addData("Motors", "v0 (%.2f), v1 (%.2f), v2 (%.2f), v3 (%.2f)", powers[0], powers[1], powers[2], powers[3]);
-            telemetry.addData("First ang", "Ang1:" + (Robot.imu.getAngularOrientation().firstAngle) * 180/Math.PI );
-            */
-            //I think it swaps at 180 instead of 360 on the angle orientation mode with first angle
+
+            double[] powers = motorPower.calcMotorsFull(nvx, nvy, nrot);
+
 
         }
 
 
-        //stop
+
         //assuming that this returns as its supposed to
         //imu.getAngularVelocity();
         //imu.getAcceleration();
-        //imu.getPosition(); //coudl use this to check if everythign isin the eiright position during autonomous
-        //use these to check how close to the goal the robot is actually achieving
+        //imu.getPosition();
 
 
 
