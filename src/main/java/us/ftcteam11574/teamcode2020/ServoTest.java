@@ -74,6 +74,7 @@ public class ServoTest extends OpMode
 
         test.setDirection(CRServo.Direction.REVERSE); //maybe this is the issue? idk...
 
+
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }

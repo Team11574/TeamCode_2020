@@ -89,7 +89,10 @@ public class ServoTest2 extends OpMode
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
-        telemetry.addData("Value of servo",test); //if this is still null, there may be a problem. I think this should output the memory address?
+        telemetry.addData("Value of servo: ",test); //if this is still null, there may be a problem. I think this should output the memory address?
+        telemetry.addData("Port num: ",test.getPortNumber());
+        telemetry.addData("Device Name: ",test.getDeviceName());
+
     }
 
     /*
@@ -124,7 +127,8 @@ public class ServoTest2 extends OpMode
             power = .5; //set power to not moving
             test.setPosition(.5);
         }
-        telemetry.addData("Power is", power);
+        telemetry.addData("Power is: ", power);
+        telemetry.addData("Position supposed to be: ",test.getPosition()); //Not the real position, but isntead the position it was last commanded to be at
         telemetry.update();
 
 
