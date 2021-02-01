@@ -39,6 +39,19 @@ import com.qualcomm.robotcore.hardware.ServoController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
+/*
+
+NOTE:
+    I've taken your old code, and just recoded it as a normal servo. Most continuous rotation servos can be interpreted as
+    normal servos, so maybe this might fix the issue or at least shed some light on whats wrong with the motor
+    This is only for debugging purposes
+
+
+
+ */
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -53,12 +66,12 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="ServoTest", group="Iterative Opmode")
-public class ServoTest extends OpMode
+@TeleOp(name="ServoTest2", group="Iterative Opmode")
+public class ServoTest2 extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private CRServo test = null;
+    private Servo test = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -70,12 +83,13 @@ public class ServoTest extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        test = hardwareMap.get(CRServo.class, "test");
+        test = hardwareMap.get(Servo.class, "test");
 
-        test.setDirection(CRServo.Direction.REVERSE); //maybe this is the issue? idk...
+        test.setDirection(Servo.Direction.REVERSE); //maybe this is the issue? idk...
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
+        telemetry.addData("Value of servo",test); //if this is still null, there may be a problem. I think this should output the memory address?
     }
 
     /*
@@ -96,14 +110,23 @@ public class ServoTest extends OpMode
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
+    double power = 0;
     @Override
     public void loop() {
+
         if (gamepad1.a){
-            test.setPower(-1);
+            power = max(.2,power); //power is at least .2;
+            test.setPosition(power); //with a CRServo interpreted as Servo, .5 is stationary, 0 is back, and 1 is forward.
+            power += .04;  //increase power slowly
+            power = min(1,power); //power can't go above 1
         }
-        if (gamepad1.b){
-            test.setPower(1);
+        if (gamepad1.b) {
+            power = .5; //set power to not moving
+            test.setPosition(.5);
         }
+        telemetry.addData("Power is", power);
+        telemetry.update();
+
 
 
     }
