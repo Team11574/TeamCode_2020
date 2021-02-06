@@ -71,7 +71,7 @@ public class TeleOp23 extends OpMode
     private DcMotor Flywheel = null;
     private CRServo LeftIn = null;
     private CRServo RightIn = null;
-    private CRServo Kick = null;
+    private Servo Kick = null;
     private double FlywheelPower;
 
     /*
@@ -91,7 +91,7 @@ public class TeleOp23 extends OpMode
         Intake = hardwareMap.get(DcMotor.class, "Intake");
         LeftIn = hardwareMap.get(CRServo.class, "LeftIn");
         RightIn = hardwareMap.get(CRServo.class, "RightIn");
-        Kick = hardwareMap.get(CRServo.class, "Kick");
+        Kick = hardwareMap.get(Servo.class, "Kick");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
 
@@ -130,7 +130,7 @@ public class TeleOp23 extends OpMode
     public void loop() {
 
         //Flywheel setting
-        Flywheel.setPower(gamepad2.right_stick_y*0.5);
+        Flywheel.setPower(gamepad2.right_stick_y);
 
         //Mecanum drive
         FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
@@ -140,22 +140,26 @@ public class TeleOp23 extends OpMode
         //Always on intake
         Intake.setPower(-0.8);
 
+        //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
+        //(1200-500)/2000 = 0.35
+        //(1800 - 500)/2000 = 0.65
+
         if(gamepad2.a){
-            LeftIn.setPower(1.0);
-            RightIn.setPower(1.0);
+            LeftIn.setPower(-0.65);
+            RightIn.setPower(0.65);
         }else if(gamepad2.b){
-            LeftIn.setPower(-1.0);
-            RightIn.setPower(-1.0);
+            LeftIn.setPower(0.65);
+            RightIn.setPower(-0.65);
         }else{
             LeftIn.setPower(0.0);
             RightIn.setPower(0.0);
         }
 
         if(gamepad2.y){
-            Kick.setPower(1.0);
+            Kick.setPosition(0.8);
         }
         if(gamepad2.x){
-            Kick.setPower(0.0);
+            Kick.setPosition(0.5);
         }
 
 

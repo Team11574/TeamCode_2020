@@ -46,6 +46,9 @@ import java.util.Vector;
 
 import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -66,8 +69,9 @@ public class PIDAutonomous extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor Intake,  Flywheel;
-    private CRServo Kick;
+    private Servo Kick;
     private CRServo LeftIn, RightIn;
+    private Double power;
 
     @Override
     public void runOpMode() {
@@ -82,11 +86,11 @@ public class PIDAutonomous extends LinearOpMode {
         Intake = hardwareMap.get(DcMotor.class, "Intake");
         LeftIn = hardwareMap.get(CRServo.class, "LeftIn");
         RightIn = hardwareMap.get(CRServo.class, "RightIn");
-        Kick = hardwareMap.get(CRServo.class, "Kick");
+        Kick = hardwareMap.get(Servo.class, "Kick");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
         //Set initial position
-        Pose2d startPose = new Pose2d(-36, 52, Math.toRadians(180));
+        Pose2d startPose = new Pose2d(-54, 12, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
 
         // Wait for the game to start (driver presses PLAY)
@@ -97,17 +101,17 @@ public class PIDAutonomous extends LinearOpMode {
         //while (opModeIsActive()) {
 
         // Setup a variable for each drive wheel to save power level for telemetry
-        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(-36, 52, Math.toRadians(180)))
-                .strafeRight(20)
+        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(-54, 12, Math.toRadians(180)))
+                .strafeLeft(20)
                 .build();
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
-                .strafeRight(10)
+                .strafeLeft(10)
                 .build();
         Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
-                .strafeRight(10)
+                .strafeLeft(10)
                 .build();
         Trajectory traj4 = drive.trajectoryBuilder(traj3.end())
-                .strafeRight(10)
+                .strafeLeft(10)
                 .build();
         Trajectory traj5 = drive.trajectoryBuilder(traj4.end())
                 .forward(36)
@@ -117,21 +121,17 @@ public class PIDAutonomous extends LinearOpMode {
         //(900-500)/2000 = 0.2
         //(2100 - 500)/2000 = 0.8
         Flywheel.setPower(-0.8);
-        Kick.setPower(0.5);
-        sleep(1000);
-        Kick.setPower(0.25);
+        Kick.setPosition(0.2);
+        Kick.setPosition(.45);
         drive.followTrajectory(traj1);
-        Kick.setPower(0.5);
-        sleep(1000);
-        Kick.setPower(0.25);
+        Kick.setPosition(0.2);
+        Kick.setPosition(.45);
         drive.followTrajectory(traj2);
-        Kick.setPower(0.5);
-        sleep(1000);
-        Kick.setPower(0.25);
+        Kick.setPosition(0.2);
+        Kick.setPosition(.45);
         drive.followTrajectory(traj3);
-        Kick.setPower(0.5);
-        sleep(1000);
-        Kick.setPower(0.25);
+        Kick.setPosition(0.2);
+        Kick.setPosition(.45);
         drive.followTrajectory(traj4);
         sleep(1000);
         Flywheel.setPower(0.0);

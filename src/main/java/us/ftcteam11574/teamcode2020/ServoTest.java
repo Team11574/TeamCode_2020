@@ -100,10 +100,16 @@ public class ServoTest extends OpMode
     @Override
     public void loop() {
         if (gamepad1.a){
-            test.setPower(-1);
+
+            //Here's what the issue was:
+            //the Max PWM Signal Range for the HSR-1425CR Servo was 1200-1800µsec
+            //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
+            //(1200-500)/2000 = 0.35
+            //(1800 - 500)/2000 = 0.65
+            test.setPower(-0.65);
         }
         if (gamepad1.b){
-            test.setPower(1);
+            test.setPower(0.65);
         }
 
 

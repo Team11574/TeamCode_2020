@@ -72,6 +72,7 @@ public class ServoTest2 extends OpMode
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Servo test = null;
+    private DcMotor Flywheel = null;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -84,6 +85,7 @@ public class ServoTest2 extends OpMode
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         test = hardwareMap.get(Servo.class, "test");
+        Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
         test.setDirection(Servo.Direction.REVERSE); //maybe this is the issue? idk...
 
@@ -116,17 +118,31 @@ public class ServoTest2 extends OpMode
     double power = 0;
     @Override
     public void loop() {
+        //reset power
+        power = 0.0;
 
         if (gamepad1.a){
-            power = max(.2,power); //power is at least .2;
-            test.setPosition(power); //with a CRServo interpreted as Servo, .5 is stationary, 0 is back, and 1 is forward.
-            power += .04;  //increase power slowly
-            power = min(1,power); //power can't go above 1
+            test.setPosition(0.2);
+            //test.setPosition(1.0);
+            //power = max(.2,power); //power is at least .2;
+            //test.setPosition(power); //with a CRServo interpreted as Servo, .5 is stationary, 0 is back, and 1 is forward.
+            //power += .04;  //increase power slowly
+            //power = min(1,power); //power can't go above 1
         }
+        //reset power
+        power = 0.0;
         if (gamepad1.b) {
-            power = .5; //set power to not moving
-            test.setPosition(.5);
+           power = .45; //set power to not moving
+            test.setPosition(.45);
+
         }
+        //reset power
+        power = 0.0;
+        if(gamepad1.x){
+            test.setPosition(0.0);
+        }
+        //reset power
+        power = 0.0;
         telemetry.addData("Power is: ", power);
         telemetry.addData("Position supposed to be: ",test.getPosition()); //Not the real position, but isntead the position it was last commanded to be at
         telemetry.update();
