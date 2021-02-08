@@ -101,9 +101,6 @@ public class SampleMecanumDrive extends MecanumDrive {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
-    private DcMotor Intake,  Flywheel;
-    private Servo Kick;
-    private CRServo LeftIn, RightIn;
 
     private VoltageSensor batteryVoltageSensor;
 

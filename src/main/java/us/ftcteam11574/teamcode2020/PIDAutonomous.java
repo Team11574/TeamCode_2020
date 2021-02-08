@@ -90,7 +90,7 @@ public class PIDAutonomous extends LinearOpMode {
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
         //Set initial position
-        Pose2d startPose = new Pose2d(-54, 12, Math.toRadians(180));
+        Pose2d startPose = new Pose2d(-30, 12, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
         // Wait for the game to start (driver presses PLAY)
@@ -101,7 +101,7 @@ public class PIDAutonomous extends LinearOpMode {
         //while (opModeIsActive()) {
 
         // Setup a variable for each drive wheel to save power level for telemetry
-        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(-54, 12, Math.toRadians(180)))
+        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(-30, 12, Math.toRadians(270)))
                 .strafeLeft(20)
                 .build();
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
@@ -120,16 +120,24 @@ public class PIDAutonomous extends LinearOpMode {
 
         //(900-500)/2000 = 0.2
         //(2100 - 500)/2000 = 0.8
-        Flywheel.setPower(-0.8);
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
+        Flywheel.setPower(-1.0);
         drive.followTrajectory(traj1);
         Kick.setPosition(0.2);
         Kick.setPosition(.45);
         drive.followTrajectory(traj2);
+        LeftIn.setPower(-0.65);
+        RightIn.setPower(0.65);
+        sleep(1000);
         Kick.setPosition(0.2);
         Kick.setPosition(.45);
         drive.followTrajectory(traj3);
+        Intake.setPower(-0.2);
+        sleep(100);
+        Intake.setPower(-0.3);
+        sleep(400);
+        LeftIn.setPower(-0.65);
+        RightIn.setPower(0.65);
+        sleep(1000);
         Kick.setPosition(0.2);
         Kick.setPosition(.45);
         drive.followTrajectory(traj4);

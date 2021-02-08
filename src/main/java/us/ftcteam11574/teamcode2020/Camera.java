@@ -85,6 +85,7 @@ public class Camera extends LinearOpMode {
             double[] center = new double[]{regions[max_id][2], regions[max_id][1]};
             telemetry.addData("Position", "x" + center[0] + "y" + center[1]);
             telemetry.addData("Time",System.currentTimeMillis()-time_start);
+
             //how long it took to recognize the image
 
 

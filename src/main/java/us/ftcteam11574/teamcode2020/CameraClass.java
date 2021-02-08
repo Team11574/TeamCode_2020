@@ -37,49 +37,52 @@ public class CameraClass extends OpenCvPipeline {
     public double b = 0;
     public double c = 0;
     
-    public Scalar out_yellow = 0;
-    public Scalar out_yellow_small = 0;
+    public Scalar out_yellow = new Scalar(0,0,0);
+    public Scalar out_yellow_small = new Scalar(0,0,0);
     
     
     
     //search area for the the stacks. Looks at the full stack of up to 4 rings
     Point left_search = new Point(
-                50,
-                50);
+                160-40,
+                120-80);
     Point right_search =  new Point(
-                100,
-                100);
+                160+40,
+                120+80);
     
     //A second search can make it easier to see the difference between 0 or 1 items inside the stack
     Point small_left_search = new Point(
-                50,
-                50);
+                160-40,
+                120-40);
     Point small_right_search =  new Point(
-                100,
-                100);
+                160+40,
+                120+40);
     
     //Yellow Hue
-    public double Yhue = 15; //remember, only from 0-180 NOT 0-360
-    public double Ysat = 200; 
-    public double Yval = 100;
+    public int Yhue = 15; //remember, only from 0-180 NOT 0-360
+    //25 seems fairly optimized
+    public int Ysat = 200;
+    //This is not very optimized
+    public int Yval = 100;
+    //
 
 
     // Values for mask, just yellow versus some mask
     
-    public double[] thresh = new double[]{15,30,50};
+    public int[] thresh = new int[]{10,55,155};
 
-    public double hue_low = Yhue - thresh[0];
-    public double hue_high = Yhue + thresh[0];
+    public int hue_low = Yhue - thresh[0];
+    public int hue_high = Yhue + thresh[0];
 
-    public double sat_low = Ysat - thresh[1];
-    public double sat_high = Ysat + thresh[1];
+    public int sat_low = Ysat - thresh[1];
+    public int sat_high = Ysat + thresh[1];
 
-    public double value_low = Yval - thresh[2];
-    public double value_high = Yval + thresh[2];
+    public int value_low = Yval - thresh[2];
+    public int value_high = Yval + thresh[2];
 
     // Values for BLUR
-    int sX = 7;
-    int sY = 7;
+    int sX = 7; //must be an odd value
+    int sY = 7; //must be an odd value
     public Size blur_size = new Size(sX,sY);
 
 
@@ -88,31 +91,36 @@ public class CameraClass extends OpenCvPipeline {
     @Override
     public Mat processFrame(Mat input) { //form of the frame is a matrix
         Mat mat = new Mat();
-        if (mat.empty()) { //no image is passed in, this signifies that somethign has gone wrong
+        if (input.empty()) { //no image is passed in, this signifies that somethign has gone wrong
             //possibly telemtry that camera is not reciving images
+            out_yellow = new Scalar(-1,-1,-1);
             return input;
         }
 
 
-        Imgproc.cvtColor(input,mat,Imgproc.COLOR_RGB2HSV); //convert to HSV, and output as mat
+        Imgproc.cvtColor(input,input,Imgproc.COLOR_RGB2HSV); //convert to HSV, and output as mat
 
-        applyBlur(mat); //apply a blur to make it easier to recognize contours
+
+        applyBlur(input); //apply a blur to make it easier to recognize contours
         
-        mat = inRange(mat, hue_low,sat_low,value_low,hue_high,sat_high,value_high); //find the pixels within some range, and keep those. Returns a grey scale image
+        input = inRange(input, hue_low,sat_low,value_low,hue_high,sat_high,value_high); //find the pixels within some range, and keep those. Returns a grey scale image
 
-        Mat stack_mat = mat.submat(new Rect(left_search, right_search)); //This gets a sub matrix within a certain range, which should be where the stack is. Taking the average of the 
+
+        Mat stack_mat = input.submat(new Rect(left_search, right_search)); //This gets a sub matrix within a certain range, which should be where the stack is. Taking the average of the
         //colors should give a good estimation of the number of items within the stack
         
-        Mat zero_v_one_mat = mat.submat(new Rect(small_left_search, small_right_search)); //This gets the sub matrix of the bottom ring. 
+        Mat zero_v_one_mat = input.submat(new Rect(small_left_search, small_right_search)); //This gets the sub matrix of the bottom ring.
         
         out_yellow = Core.mean(stack_mat); //Not entirely sure if this function is correctly, but it shoudl take the mean within that range. The lighter it is, the more yellow must of been there
         out_yellow_small = Core.mean(zero_v_one_mat); // ^ same as above.
+
+
+        
         
         
         
         
         
-        
 
 
 
@@ -123,9 +131,15 @@ public class CameraClass extends OpenCvPipeline {
 
 
 
-        
-        Object[] output = contours(findEdges(mat), mat); //destructive, creates the contours, and saves them to the Object class, this is mainly useful for seeing bounding
-        //boxes. This problably won't be all that useful later 
+        try {
+            Mat res = findEdges(input);
+
+            Object[] output = contours(res, input); //destructive, creates the contours, and saves them to the Object class, this is mainly useful for seeing bounding
+            //boxes. This probably won't be all that useful later
+        }
+        catch (Exception e) {
+            //bad form, for testing only
+        }
 
 
 
@@ -155,7 +169,7 @@ public class CameraClass extends OpenCvPipeline {
         */
         
         
-        return mat;
+        return input;
 
     }
     public double returnVal() {
@@ -215,9 +229,12 @@ public class CameraClass extends OpenCvPipeline {
         for (int i = 0; i < contours.size(); i++) {
             Scalar color = new Scalar(155, 155, 155);
             Imgproc.drawContours(input, contoursPolyList, i, color);
-            Imgproc.rectangle(input, boundRect[i].tl(), boundRect[i].br(), color, 2);
+
             //tl() -- top left, br() -- bottom right
-            Imgproc.circle(input, centers[i], (int) radius[i][0], color, 2);
+            if(radius[i][0] > 20) {
+                Imgproc.rectangle(input, boundRect[i].tl(), boundRect[i].br(), color, 2);
+                Imgproc.circle(input, centers[i], (int) radius[i][0], color, 2);
+            }
         }
 
         Object[] res = new Object[]{centers, boundRect, radius};

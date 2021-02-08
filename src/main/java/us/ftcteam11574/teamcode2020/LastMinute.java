@@ -29,40 +29,44 @@
 
 package us.ftcteam11574.teamcode2020;
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
-import java.security.CryptoPrimitive;
-import java.security.DomainCombiner;
-import java.util.ArrayList;
+import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
 
-import static android.os.SystemClock.sleep;
+import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
 
 /**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
+ * This file illustrates the concept of driving a path based on time.
+ * It uses the common Pushbot hardware class to define the drive on the robot.
+ * The code is structured as a LinearOpMode
  *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
+ * The code assumes that you do NOT have encoders on the wheels,
+ *   otherwise you would use: PushbotAutoDriveByEncoder;
+ *
+ *   The desired path in this example is:
+ *   - Drive forward for 3 seconds
+ *   - Spin right for 1.3 seconds
+ *   - Drive Backwards for 1 Second
+ *   - Stop and close the claw.
+ *
+ *  The code is written in a simple form with no optimizations.
+ *  However, there are several ways that this type of sequence could be streamlined,
  *
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOp23", group="Iterative Opmode")
-public class TeleOp23 extends OpMode
-{
-    // Declare OpMode members.
-    private ElapsedTime runtime = new ElapsedTime();
+@Autonomous(name="LastMinute", group="Pushbot")
+public class LastMinute extends LinearOpMode {
+
+    /* Declare OpMode members. */
+    private ElapsedTime     runtime = new ElapsedTime();
     private DcMotor FLDrive = null;
     private DcMotor BLDrive = null;
     private DcMotor FRDrive = null;
@@ -77,16 +81,14 @@ public class TeleOp23 extends OpMode
     private DcMotor Wobble = null;
     private double FlywheelPower;
 
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
-    @Override
-    public void init() {
-        telemetry.addData("Status", "Initialized");
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+    @Override
+    public void runOpMode() {
+
+        /*
+         * Initialize the drive system variables.
+         * The init() method of the hardware class does all the work here
+         */
         FLDrive  = hardwareMap.get(DcMotor.class, "FLDrive");
         FRDrive  = hardwareMap.get(DcMotor.class, "FRDrive");
         BLDrive  = hardwareMap.get(DcMotor.class, "BLDrive");
@@ -100,8 +102,6 @@ public class TeleOp23 extends OpMode
         Extender = hardwareMap.get(CRServo.class, "Extender");
         Wobble = hardwareMap.get(DcMotor.class, "Wobble");
 
-
-
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         FLDrive.setDirection(DcMotor.Direction.REVERSE);
@@ -109,90 +109,29 @@ public class TeleOp23 extends OpMode
         FRDrive.setDirection(DcMotor.Direction.FORWARD);
         BRDrive.setDirection(DcMotor.Direction.FORWARD);
 
-        // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized");
-    }
+        // Send telemetry message to signify robot waiting;
+        telemetry.addData("Status", "Ready to run");    //
+        telemetry.update();
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
-    @Override
-    public void init_loop() {
-    }
+        // Wait for the game to start (driver presses PLAY)
+        waitForStart();
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
-    @Override
-    public void start() {
+        // Step through each leg of the path, ensuring that the Auto mode has not been stopped along the way
+
+        // Step 1:  Drive forward for 3 seconds
+        FLDrive.setPower(1.0);
+        FRDrive.setPower(1.0);
+        BLDrive.setPower(1.0);
+        BRDrive.setPower(1.0);
 
         runtime.reset();
+        while (opModeIsActive() && (runtime.seconds() < 0.75)) {
+            telemetry.addData("Path", "Leg 1: %2.5f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+
+        telemetry.addData("Path", "Complete");
+        telemetry.update();
+        sleep(1000);
     }
-
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
-    @Override
-    public void loop() {
-
-        //Flywheel setting
-        Flywheel.setPower(gamepad2.right_stick_y);
-
-        //Mecanum drive
-        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
-        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
-        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
-        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
-        //Always on intake
-        Intake.setPower(-0.8);
-        LeftIn.setPower(-0.65);
-        RightIn.setPower(0.65);
-
-        //Wobble
-        Wobble.setPower(gamepad2.left_stick_y);
-
-        //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
-        //(1200-500)/2000 = 0.35
-        //(1800 - 500)/2000 = 0.65
-
-        if(gamepad1.a){
-            LeftIn.setPower(0.0);
-            RightIn.setPower(0.0);
-        }else if(gamepad1.b){
-            LeftIn.setPower(0.65);
-            RightIn.setPower(-0.65);
-        }
-
-        if(gamepad2.y){
-            Kick.setPosition(0.8);
-        }
-        if(gamepad2.x){
-            Kick.setPosition(0.5);
-        }
-
-        if(gamepad2.dpad_up){
-            Extender.setPower(-0.65);
-        }
-        if(gamepad2.dpad_down){
-            Extender.setPower(0.65);
-        }
-        if(gamepad2.a){
-            Gripper.setPosition(0.8);
-        }
-        if(gamepad2.b){
-            Gripper.setPosition(0.5);
-        }
-
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-    }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-
-    }
-
 }
