@@ -42,7 +42,7 @@ public class CameraClass extends OpenCvPipeline {
     
     
     
-    //search area for the the stacks. Looks at the full stack of up to 4 rings
+    //search area for the the stacks. Looks at the full stack of up to 4 rings. NEEDS FINE TUNING BASED ON CAMERA ORIENTATION
     Point left_search = new Point(
                 160-40,
                 120-80);
@@ -50,7 +50,7 @@ public class CameraClass extends OpenCvPipeline {
                 160+40,
                 120+80);
     
-    //A second search can make it easier to see the difference between 0 or 1 items inside the stack
+    //A second search can make it easier to see the difference between 0 or 1 items inside the stack. NEEDS FINE TUNING BASED ON CAMERA ORIENTATION
     Point small_left_search = new Point(
                 160-40,
                 120-40);
@@ -65,6 +65,7 @@ public class CameraClass extends OpenCvPipeline {
     //This is not very optimized
     public int Yval = 100;
     //
+    public int boundingCutoff = 20; //min size required for a bounding circle
 
 
     // Values for mask, just yellow versus some mask
@@ -131,15 +132,19 @@ public class CameraClass extends OpenCvPipeline {
 
 
 
-        try {
-            Mat res = findEdges(input);
+  
+         Mat res = findEdges(input);
 
-            Object[] output = contours(res, input); //destructive, creates the contours, and saves them to the Object class, this is mainly useful for seeing bounding
-            //boxes. This probably won't be all that useful later
-        }
-        catch (Exception e) {
-            //bad form, for testing only
-        }
+         Object[] output = contours(res, input); //destructive, creates the contours, and saves them to the Object class, this is mainly useful for seeing bounding
+         //boxes. This probably won't be all that useful later
+        
+        Scalar clrSearch = new Scalar(80,250,250);
+        Imgproc.rectangle(input, left_search, right_search, color, 2);
+        Imgproc.rectangle(input, left_search_small, right_search_small, color, 2); 
+        //we draw on the bounding rectangles of where we search after. This can help to see if we are searching in the right area for the rings.  
+        
+        
+        
 
 
 
@@ -231,18 +236,73 @@ public class CameraClass extends OpenCvPipeline {
             Imgproc.drawContours(input, contoursPolyList, i, color);
 
             //tl() -- top left, br() -- bottom right
-            if(radius[i][0] > 20) {
-                Imgproc.rectangle(input, boundRect[i].tl(), boundRect[i].br(), color, 2);
-                Imgproc.circle(input, centers[i], (int) radius[i][0], color, 2);
+            if(radius[i][0] > boundingCutoff) {
+                //Imgproc.rectangle(input, boundRect[i].tl(), boundRect[i].br(), color, 2);
+                //Imgproc.circle(input, centers[i], (int) radius[i][0], color, 2);
             }
         }
 
         Object[] res = new Object[]{centers, boundRect, radius};
+        double[] bb1 = avgBoundingBoxReturn(boundRect, centers, radius, countours.size());
+        double[] bb2 = largestBoundingBoxReturn(boundRect, centers, radius, countours.size());
+        //draw two different bounding rectangles to see if either are accurate. One is just the center, wheras the other is 
+        Imgproc.rectangle(input, new Point(bb1[0] -10, bb1[1] - 10), new Point(bb1[0] +10, bb1[1] + 10), color, 2);
+        Imgproc.rectangle(input, new Point(bb2[0] -bb2[2]/2, bb2[1] - bb2[2]/2), new Point(bb2[0] +bb2[2]/2, bb2[1] + bb2[2]/2), color, 2);
         return res;
 
 
 
     }
+    //UNTESTED FUNCTION
+    public double[] avgBoundingBoxReturn(Rect[] boundRect, Point[] centers, float[][] radius, int sz) {
+        //This function takes the square of all bounding box sizes and attempts to find the position of a bounding box. 
+        double avgX = 0;
+        double avgY = 0;
+        double total_value = 0;
+        
+        for (int i = 0; i < sz; i++) {
+           
+            
+
+            
+            if(radius[i][0] > boundingCutoff) {
+                double r2 = (radius[i][0]*radius[i][0])
+                total_value +=  r2; 
+                avgX += (boundRect[i].tl().x + boundRect[i].br().x)/2.0 * r2;
+                avgY +=  (boundRect[i].tl().y + boundRect[i].br().y)/2.0 * r2;
+             
+            }
+        }
+        double x = avgX / total_value;
+        double y = avgY / total_value;
+        return new double[]{x,y, total_value};
+        
+        
+        
+    }
+    public double[] largestBoundingBoxReturn(Rect[] boundRect, Point[] centers, float[][] radius, int sz) {
+        //returns the largestBoundingBox. Uses size of radius of bounding circle to find the largest. 
+        double max = -1;
+        double x =0;
+        double y =  0;
+        for (int i = 0; i < sz; i++) {
+           
+            
+
+            
+            if(radius[i][0] > boundingCutoff) {
+                if(radius[i][0] > max) {
+                    max = radius[i][0];   
+                    x= centers[i].x;
+                    y = centers[i].y;
+                }
+                
+             
+            }
+        }
+        return new double[]{x,y,max};
+    }
+    
     public ArrayList<Mat> toYCrCb(Mat input) {
 
         Mat tmp = new Mat();
