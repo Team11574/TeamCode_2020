@@ -44,19 +44,19 @@ public class CameraClass extends OpenCvPipeline {
     
     //search area for the the stacks. Looks at the full stack of up to 4 rings. NEEDS FINE TUNING BASED ON CAMERA ORIENTATION
     Point left_search = new Point(
-                160-40,
-                120-80);
+                175-45,
+                200);
     Point right_search =  new Point(
-                160+40,
-                120+80);
+                175+45,
+                130);
     
     //A second search can make it easier to see the difference between 0 or 1 items inside the stack. NEEDS FINE TUNING BASED ON CAMERA ORIENTATION
     Point small_left_search = new Point(
-                160-40,
-                120-40);
+                175-45,
+                200);
     Point small_right_search =  new Point(
-                160+40,
-                120+40);
+                175+45,
+                160);
     
     //Yellow Hue
     public int Yhue = 15; //remember, only from 0-180 NOT 0-360
@@ -85,6 +85,27 @@ public class CameraClass extends OpenCvPipeline {
     int sX = 7; //must be an odd value
     int sY = 7; //must be an odd value
     public Size blur_size = new Size(sX,sY);
+
+    double[] resLarge = new double[]{0,0,0};
+    double[] resAvg = new double[]{0,0,0};
+
+    double[] size_val_0 = new double[]{-2,1000};            //constraits for the size of the box returned by res_large
+    double[] size_val_1 = new double[]{size_val_0[1],2300+150};
+    double[] size_val_2 = new double[]{size_val_1[1],2500 + 1500}; //not sure about this one
+
+    double[] size_box_0 = new double[]{-1,10};                   //constraints for the size of the color returned by resAvg
+    double[] size_box_1 = new double[]{size_box_0[1],33+3};
+    double[] size_box_2 = new double[]{size_box_1[1],38+5};
+
+    double[] out_yellow_0 = new double[]{-1,20};                 //constraints for average color returned by yellow_out
+    double[] out_yellow_1 = new double[]{out_yellow_0[1],48+30};
+    double[] out_yellow_2 = new double[]{out_yellow_1[1],125+150};
+
+    double[] out_yellow_s_0 = new double[]{-1,40};                 //constraints for average color returned by yellow_out_small
+    double[] out_yellow_s_1 = new double[]{out_yellow_s_0[1],82+20};
+    double[] out_yellow_s_2 = new double[]{out_yellow_s_1[1],136+100};
+
+
 
 
 
@@ -139,8 +160,8 @@ public class CameraClass extends OpenCvPipeline {
          //boxes. This probably won't be all that useful later
         
         Scalar clrSearch = new Scalar(80,250,250);
-        Imgproc.rectangle(input, left_search, right_search, color, 2);
-        Imgproc.rectangle(input, left_search_small, right_search_small, color, 2); 
+        Imgproc.rectangle(input, left_search, right_search, clrSearch, 2);
+        Imgproc.rectangle(input, small_left_search, small_right_search, clrSearch, 2);
         //we draw on the bounding rectangles of where we search after. This can help to see if we are searching in the right area for the rings.  
         
         
@@ -243,13 +264,86 @@ public class CameraClass extends OpenCvPipeline {
         }
 
         Object[] res = new Object[]{centers, boundRect, radius};
-        double[] bb1 = avgBoundingBoxReturn(boundRect, centers, radius, countours.size());
-        double[] bb2 = largestBoundingBoxReturn(boundRect, centers, radius, countours.size());
-        //draw two different bounding rectangles to see if either are accurate. One is just the center, wheras the other is 
+        double[] bb1 = avgBoundingBoxReturn(boundRect, centers, radius, contours.size());
+        double[] bb2 = largestBoundingBoxReturn(boundRect, centers, radius, contours.size());
+        this.resAvg=bb1; //not great form to make the memory address the same, but still works
+        this.resLarge=bb2;
+        //draw two different bounding rectangles to see if either are accurate. One is just the center, wheras the other is
+        Scalar color = new Scalar(205, 155, 155);
         Imgproc.rectangle(input, new Point(bb1[0] -10, bb1[1] - 10), new Point(bb1[0] +10, bb1[1] + 10), color, 2);
         Imgproc.rectangle(input, new Point(bb2[0] -bb2[2]/2, bb2[1] - bb2[2]/2), new Point(bb2[0] +bb2[2]/2, bb2[1] + bb2[2]/2), color, 2);
         return res;
 
+
+
+    }
+    public int[] ringsReturn() {
+
+        int[] res = {0,0,0};
+
+
+        double total_val = resAvg[2];
+        double size = resLarge[2];
+        double v= out_yellow.val[0];
+        double v2 = out_yellow_small.val[0];
+
+        double x_predict = resAvg[0];
+        double y_predict = resAvg[1];
+
+        double x_predict2 = resLarge[0];
+        double y_predict2 = resLarge[1];
+
+
+
+        if(inRange(x_predict2,y_predict2)) {
+            int r1 = returnConstraints(size, size_box_0, size_box_1,size_box_2);
+            if (r1 != -1) {
+                res[r1] += 1;
+            }
+
+        }
+        if (inRange(x_predict,y_predict)) {
+            int r1 = returnConstraints(total_val, size_val_0, size_val_1,size_val_2);
+            if (r1 != -1) {
+                res[r1] += 10;
+            }
+        }
+        {
+            int r1 = returnConstraints(out_yellow.val[0], out_yellow_0, out_yellow_1,out_yellow_2);
+            if (r1 != -1) {
+                res[r1] += 100;
+            }
+        }
+        {
+            int r1 = returnConstraints(out_yellow_small.val[0], out_yellow_s_0, out_yellow_s_1,out_yellow_s_2);
+            if (r1 != -1) {
+                res[r1] += 1000;
+            }
+        }
+
+
+        //telemetry.addData("Yellow range 1", detector.out_yellow.val[0] );
+        //telemetry.addData("Yellow Range 2", detector.out_yellow_small.val[0] );
+        //telemetry.addData("ColorSize", detector.resLarge[2] );
+        //telemetry.addData("BoxSize", detector.resAvg[2] );
+        //telemetry.addData("Update!", k);
+
+        return res;
+    }
+    public int returnConstraints(double val, double[] c1, double[] c2, double[] c3) {
+        if(val > c1[0] && val < c1[1]) {
+            return 0;
+        }
+        else if(val > c2[0] && val < c2[1]) {
+            return 1;
+        }
+        else if(val > c3[0] && val < c3[1]) {
+            return 2;
+        }
+        return -1;
+    }
+    boolean inRange(double x, double y) {
+        return (Math.min(left_search.x,right_search.x) < x && x < Math.max(left_search.x,right_search.x) && Math.min(left_search.y,right_search.y) < y && y < Math.max(left_search.y,right_search.y));
 
 
     }
@@ -266,7 +360,7 @@ public class CameraClass extends OpenCvPipeline {
 
             
             if(radius[i][0] > boundingCutoff) {
-                double r2 = (radius[i][0]*radius[i][0])
+                double r2 = (radius[i][0]*radius[i][0]);
                 total_value +=  r2; 
                 avgX += (boundRect[i].tl().x + boundRect[i].br().x)/2.0 * r2;
                 avgY +=  (boundRect[i].tl().y + boundRect[i].br().y)/2.0 * r2;

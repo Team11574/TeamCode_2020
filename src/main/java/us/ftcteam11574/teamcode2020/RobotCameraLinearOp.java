@@ -44,6 +44,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
+        /*
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Intake = hardwareMap.get(DcMotor.class, "Intake");
@@ -55,6 +56,8 @@ public class RobotCameraLinearOp extends LinearOpMode {
         //Set initial position
         Pose2d startPose = new Pose2d(-54, 12, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
+
+         */
 
         // Initialize the back-facing camera
         telemetry.addData("1","");
@@ -113,8 +116,15 @@ public class RobotCameraLinearOp extends LinearOpMode {
 
             k++;
             v =detector.returnVal();
-            telemetry.addData("Yellow range 1", detector.returnYellows()[0].val[0] + " " + detector.returnYellows()[0].val[1] +" "+detector.returnYellows()[0].val[2]);
-            telemetry.addData("Yellow Range 2", detector.returnYellows()[1].val[0] + " " + detector.returnYellows()[1].val[1] +" "+detector.returnYellows()[1].val[2]);
+
+            telemetry.addData("Yellow range 1", detector.out_yellow.val[0] );
+            telemetry.addData("Yellow Range 2", detector.out_yellow_small.val[0] );
+            telemetry.addData("ColorSize", detector.resLarge[2] );
+            telemetry.addData("BoxSize", detector.resAvg[2] );
+
+            telemetry.addData("Results:", detector.ringsReturn()[0] + " " +  detector.ringsReturn()[1] + " " + detector.ringsReturn()[2]);
+
+
             telemetry.addData("Update!", k);
 
             telemetry.update();
@@ -126,6 +136,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
 
         // Setup a variable for each drive wheel to save power level for telemetry
+        /*
         Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(-54, 12, Math.toRadians(-90)))
                 .splineTo(new Vector2d(-54, 32), Math.toRadians(180))
                 .build();
@@ -161,6 +172,8 @@ public class RobotCameraLinearOp extends LinearOpMode {
         sleep(1000);
         Flywheel.setPower(0.0);
         drive.followTrajectory(traj5);
+
+         */
     }
 
 }
