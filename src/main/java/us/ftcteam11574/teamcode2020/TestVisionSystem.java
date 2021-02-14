@@ -26,7 +26,7 @@ import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
 @TeleOp(name="Test Vision", group="Iterative Opmode")
 public class TestVisionSystem extends LinearOpMode {
 
-    int width = 320; // heigh and width of the camera
+    int width = 320; // height2  and width of the camera
     int height = 240;
 
     CameraClass detector = new CameraClass();
