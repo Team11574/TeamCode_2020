@@ -18,11 +18,13 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvWebcam;
 
+import java.util.ArrayList;
+
 import us.ftcteam11574.teamcode2020.CameraClass;
 import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
 
-@TeleOp(name="Test Camera simple2 (THIS)", group="Iterative Opmode")
-public class RobotCameraLinearOp extends LinearOpMode {
+@TeleOp(name="Test Vision", group="Iterative Opmode")
+public class TestVisionSystem extends LinearOpMode {
 
     int width = 320; // heigh and width of the camera
     int height = 240;
@@ -30,6 +32,10 @@ public class RobotCameraLinearOp extends LinearOpMode {
     CameraClass detector = new CameraClass();
     // OpenCvCamera phoneCam; //simpler version
     OpenCvWebcam phoneCam; //more complex form
+
+    ArrayList<double[]> memory = new ArrayList<double[]>(10); //the memory this robot contains,
+    //stores some data between movements, to allow it to have some memory of where the block was previously.
+    //coudl use this to compute if the ring is moving, for example, or if the robot is i simply moving.
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -50,12 +56,15 @@ public class RobotCameraLinearOp extends LinearOpMode {
         Intake = hardwareMap.get(DcMotor.class, "Intake");
         LeftIn = hardwareMap.get(CRServo.class, "LeftIn");
         RightIn = hardwareMap.get(CRServo.class, "RightIn");
-        Kick = hardwareMap.get(Servo.class, "Kick"); //wobble
+        Kick = hardwareMap.get(Servo.class, "Kick");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
-        DcMotor Wobble = hardwareMap.get(DcMotor.class, "Wobble");
-        //Set initial position
-        Pose2d startPose = new Pose2d(-54, 12, Math.toRadians(180));
-        drive.setPoseEstimate(startPose);
+
+        for (int i = 0; 10 > i; i++) {
+            memory.add(new double[]{-1,-1,-1,-1}); //adds some blank data, will be replaced later as more data comes in
+            //could form this like: <recognized item>, <center>, <distance away x>, <ring moving?>
+
+        }
+
 
 
 
@@ -70,6 +79,9 @@ public class RobotCameraLinearOp extends LinearOpMode {
         telemetry.addData("3","");
 
         //next line is non-blocking!
+        detector.hue_low= 15; //change some details to make it a little bit more restricted
+        detector.hue_high = 25;
+        detector.boxDraw = true;
         phoneCam.setPipeline(detector);
         phoneCam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
@@ -90,20 +102,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         //...
         telemetry.addData("INIT CAMERA","");
 
-        /*
-        for (OpenCvInternalCamera.FrameTimingRange r : phoneCam.getFrameTimingRangesSupportedByHardware())
-        {
-            //could telemetry these out to see what is availbe
-            telemetry.addData("CAMERA FPS OPTIONS","max" + r.max + "  min:" + r.min);
-            if(r.max == 30 && r.min == 30) //if locked at 30, otherwise, don't change the frameTiming
 
-            {
-                phoneCam.setHardwareFrameTimingRange(r);
-                break;
-            }
-        }
-
-         */
         telemetry.update();
 
         telemetry.setMsTransmissionInterval(20); //potentiall useful if need fast telemetry
@@ -113,105 +112,63 @@ public class RobotCameraLinearOp extends LinearOpMode {
         //phoneCam.setZoom();
 
         double v =detector.currentTotalColor;
+
         telemetry.addData("Test new", v);
         telemetry.update();
 
         waitForStart();
-
-
-
-        //telemtry stuff
-
-        // more robot logic...
-
-        // run until the end of the match (driver presses STOP)
-
-        // Setup a variable for each drive wheel to save power level for telemetry
-        int id_pos = maxId(detector.ringsReturn());
-
-        Trajectory traj1;
-
-        if(id_pos == 1) {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-50, 70), Math.toRadians(180))
-                    .build();
-        }
-        else if(id_pos == 0) {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-38, 50), Math.toRadians(180))
-                    .build();
-        }
-        else if(id_pos == 2) {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-35, 82), Math.toRadians(180))
-                    .build();
-        }
-        else {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-35, 85), Math.toRadians(180))
-                    .build();
-        }
-
-
-
-
-        Trajectory traj2= drive.trajectoryBuilder(traj1.end())
-                .splineTo(new Vector2d(-48,45),Math.toRadians(-90))
-                .build();
-
-
-
-
-        //(900-500)/2000 = 0.2
-        //(2100 - 500)/2000 = 0.8
-
-        //Flywheel.setPower(-0.8);
-
-        drive.followTrajectory(traj1);
-        Wobble.setPower(.5);
-        sleep(1000);
-        Kick.setPosition(1.2);
-        sleep(1500);
-        Wobble.setPower(-1);
-        sleep(500);
-        Wobble.setPower(0);
-        //drive.followTrajectory(traj2);
-        //shoot the rings during this period
-        drive.followTrajectory(traj2);
-        //drive.followTrajectory(traj3);
-
-        /*
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
-        drive.followTrajectory(traj2);
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
-        drive.followTrajectory(traj3);
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
-        drive.followTrajectory(traj4);
-        sleep(1000);
-        Flywheel.setPower(0.0);
-        drive.followTrajectory(traj5);
-
-         */
-
-
-    }
-    int maxId(int[] res) {
-        int max = -1;
-        int maxId = 0;
-        for(int i = 0; res.length > i; i++) {
-            if(res[i] > max) {
-                max = res[0];
-                maxId = i;
+        int k = 0;
+        while(opModeIsActive())
+        {
+            // Delay to not waste too many CPU cycles
+            sleep(20);
+            double wideSize = Math.abs(detector.resLargeBox[0].x -detector.resLargeBox[1].x);
+            telemetry.addData("Wide",wideSize);
+            if( Math.abs( (detector.resLargeBox[0].x +detector.resLargeBox[1].x)/2.0  - width/2) <20 ) {
+                if(wideSize < 70) {
+                    double[] powers = motorPower.calcMotorsFull(.8, 0, 0);
+                    drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                }
+                else {
+                    drive.setMotorPowers(0,0,0,0);
+                }
             }
+            else {
+
+
+                if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 > width / 2 && wideSize > 20) {
+                    double[] powers = motorPower.calcMotorsFull(0, -.8, 0);
+                    drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                    telemetry.addData("right", "");
+                } else {
+                    if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 < width / 2 && wideSize > 20) {
+                        double[] powers = motorPower.calcMotorsFull(0, .8, 0);
+                        drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                        telemetry.addData("left", "");
+                    }
+
+                }
+            }
+            //use the wideSize to determine how far to move foward. Also, this shoudl have some keeping of the previous positions, so it doesn't just
+            //randomly move. I.e. its able to be intelligent.
+
+
+
+
+
+
+
+            telemetry.addData("Update!", k);
+
+            telemetry.update();
         }
-        return maxId;
+
+
 
 
 
 
     }
+
 
 }

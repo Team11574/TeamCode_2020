@@ -39,6 +39,8 @@ public class CameraClass extends OpenCvPipeline {
     
     public Scalar out_yellow = new Scalar(0,0,0);
     public Scalar out_yellow_small = new Scalar(0,0,0);
+
+    boolean boxDraw = false;
     
     
     
@@ -88,6 +90,8 @@ public class CameraClass extends OpenCvPipeline {
 
     double[] resLarge = new double[]{0,0,0};
     double[] resAvg = new double[]{0,0,0};
+
+    Point[] resLargeBox = new Point[]{new Point(), new Point()};
 
     double[] size_val_0 = new double[]{-2,1000};            //constraits for the size of the box returned by res_large
     double[] size_val_1 = new double[]{size_val_0[1],2300+150};
@@ -163,41 +167,15 @@ public class CameraClass extends OpenCvPipeline {
         Imgproc.rectangle(input, left_search, right_search, clrSearch, 2);
         Imgproc.rectangle(input, small_left_search, small_right_search, clrSearch, 2);
         //we draw on the bounding rectangles of where we search after. This can help to see if we are searching in the right area for the rings.  
+
         
-        
-        
-
-
-
-
-        /*
-        int row_s = 0;
-        int row_e = 320;
-        int col_s = 0;
-        int col_e = 240;
-        double total_color = 0;
-         a = 0;
-         b = 0;
-        c = 0;
-        
-        for (int r = row_s;row_e > r;r++ ) {
-            for (int cl = col_s;col_e > c;c++ ) {
-                a += mat.get(r,cl)[0];
-                b += mat.get(r,cl)[1];
-                c += mat.get(r,cl)[2];
-
-            }
+        if(boxDraw) {
+            Imgproc.rectangle(input, resLargeBox[0], resLargeBox[1], clrSearch, 2); //draw the box
         }
-
-        a /=  ( (row_e-row_s) * (col_e-col_s));
-        b /=  ( (row_e-row_s) * (col_e-col_s));
-        c /=  ( (row_e-row_s) * (col_e-col_s));
-        */
-        
-        
         return input;
 
     }
+
     public double returnVal() {
         return currentTotalColor;
     }
@@ -305,19 +283,19 @@ public class CameraClass extends OpenCvPipeline {
         if (inRange(x_predict,y_predict)) {
             int r1 = returnConstraints(total_val, size_val_0, size_val_1,size_val_2);
             if (r1 != -1) {
-                res[r1] += 10;
+                res[r1] += 1;
             }
         }
         {
             int r1 = returnConstraints(out_yellow.val[0], out_yellow_0, out_yellow_1,out_yellow_2);
             if (r1 != -1) {
-                res[r1] += 100;
+                res[r1] += 1;
             }
         }
         {
             int r1 = returnConstraints(out_yellow_small.val[0], out_yellow_s_0, out_yellow_s_1,out_yellow_s_2);
             if (r1 != -1) {
-                res[r1] += 1000;
+                res[r1] += 1;
             }
         }
 
@@ -361,6 +339,10 @@ public class CameraClass extends OpenCvPipeline {
             
             if(radius[i][0] > boundingCutoff) {
                 double r2 = (radius[i][0]*radius[i][0]);
+                if(boundRect[i].tl().y > 120) {
+                    resLargeBox[0] = boundRect[i].tl();
+                    resLargeBox[1] = boundRect[i].br();
+                }
                 total_value +=  r2; 
                 avgX += (boundRect[i].tl().x + boundRect[i].br().x)/2.0 * r2;
                 avgY +=  (boundRect[i].tl().y + boundRect[i].br().y)/2.0 * r2;

@@ -90,7 +90,7 @@ public class PIDAutonomous extends LinearOpMode {
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
 
         //Set initial position
-        Pose2d startPose = new Pose2d(-30, 12, Math.toRadians(90));
+        Pose2d startPose = new Pose2d(-30, 12, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
 
         // Wait for the game to start (driver presses PLAY)
@@ -101,7 +101,7 @@ public class PIDAutonomous extends LinearOpMode {
         //while (opModeIsActive()) {
 
         // Setup a variable for each drive wheel to save power level for telemetry
-        Trajectory traj1 = drive.trajectoryBuilder(new Pose2d(-30, 12, Math.toRadians(270)))
+        Trajectory traj1 = drive.trajectoryBuilder(startPose)
                 .strafeLeft(20)
                 .build();
         Trajectory traj2 = drive.trajectoryBuilder(traj1.end())
