@@ -127,9 +127,9 @@ public class CameraClass extends OpenCvPipeline {
 
         Imgproc.cvtColor(input,input,Imgproc.COLOR_RGB2HSV); //convert to HSV, and output as mat
 
-
+        //Checkpoint 0 /*
         applyBlur(input); //apply a blur to make it easier to recognize contours
-        
+        //Checkpoint 1 /*
         input = inRange(input, hue_low,sat_low,value_low,hue_high,sat_high,value_high); //find the pixels within some range, and keep those. Returns a grey scale image
 
 
@@ -160,19 +160,22 @@ public class CameraClass extends OpenCvPipeline {
 
   
          Mat res = findEdges(input);
-
+         //Checkpoint 2 /*
+            //input = res; for checkpoint 2
          Object[] output = contours(res, input); //destructive, creates the contours, and saves them to the Object class, this is mainly useful for seeing bounding
          //boxes. This probably won't be all that useful later
         
         Scalar clrSearch = new Scalar(80,250,250);
-        Imgproc.rectangle(input, left_search, right_search, clrSearch, 2);
-        Imgproc.rectangle(input, small_left_search, small_right_search, clrSearch, 2);
+            //temporarily commented out
+        //Imgproc.rectangle(input, left_search, right_search, clrSearch, 2);
+        //Imgproc.rectangle(input, small_left_search, small_right_search, clrSearch, 2);
         //we draw on the bounding rectangles of where we search after. This can help to see if we are searching in the right area for the rings.  
 
         
         if(boxDraw) {
             Imgproc.rectangle(input, resLargeBox[0], resLargeBox[1], clrSearch, 2); //draw the box
         }
+        // */
         return input;
 
     }
