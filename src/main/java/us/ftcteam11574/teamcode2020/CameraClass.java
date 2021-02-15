@@ -10,6 +10,8 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
+import org.openftc.easyopencv.PipelineRecordingParameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +31,7 @@ public class CameraClass extends OpenCvPipeline {
     //TODO: take either the average of all centers, to take teh average of centers times the size of the bounding rectangle
     //TODO: submat to take just certain parts
     //TODO: get locatino based on the image.  
-    
-    
+
     //NOTE: all the current values used in this aren't tested. I haven't yet worked out the correct search area, or optimized parameters for the hue, saturation, and value
     public double currentTotalColor = 0;
     public double a = 0;
@@ -389,10 +390,16 @@ public class CameraClass extends OpenCvPipeline {
         return res;
 
     }
+    boolean toggleRecording = true;
+
+
+    }
 
 
 
 
 
 
-}
+
+
+

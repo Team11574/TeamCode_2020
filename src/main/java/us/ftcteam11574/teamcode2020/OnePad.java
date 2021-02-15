@@ -58,8 +58,8 @@ import static android.os.SystemClock.sleep;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOp23", group="Iterative Opmode")
-public class TeleOp23 extends OpMode
+@TeleOp(name="TeleOp23 One Pad", group="Iterative Opmode")
+public class OnePad extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -69,14 +69,18 @@ public class TeleOp23 extends OpMode
     private DcMotor BRDrive = null;
     private DcMotor Intake = null;
     private DcMotor Flywheel = null;
+    private Servo Gripper = null;
+    private CRServo Extender = null;
     private DcMotor Wobble = null;
     private DcMotor Stationary = null;
     private Servo Gate = null;
-    private Servo Kick = null;
 
     private double FlywheelPower;
     boolean aPressed = false;
     boolean intakeOn = true;
+
+    boolean yPressed = false;
+    boolean yMode = false;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -97,7 +101,7 @@ public class TeleOp23 extends OpMode
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
         Wobble = hardwareMap.get(DcMotor.class, "Wobble");
         Gate = hardwareMap.get(Servo.class, "Gate");
-        Kick = hardwareMap.get(Servo.class, "Kick");
+
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -147,7 +151,7 @@ public class TeleOp23 extends OpMode
 
 
         /*
-        double[] powers = motorPower.calcMotorsMax(gamepad1.right_stick_x,gamepad1.right_stick_y, gamepad1.left_stick_y);
+        double[] powers = motorPower.calcMotorsFull(gamepad1.right_stick_x,gamepad1.right_stick_y, gamepad1.left_stick_y);
         FLDrive.setPower(powers[0]);
         BLDrive.setPower(powers[1]);
         BRDrive.setPower(powers[2]);
@@ -179,21 +183,19 @@ public class TeleOp23 extends OpMode
             Intake.setPower(0);
             Stationary.setPower(0);
         }
-
-        if(gamepad2.y){
-            Kick.setPosition(0.8);
+        if(!yPressed && gamepad1.y) {
+            yPressed = true;
+            yMode = !yMode;
         }
-        if(gamepad2.x){
-            Kick.setPosition(0.5);
+        if(! gamepad1.y) {
+            yPressed = false;
         }
 
-
-
-        if(gamepad2.a){
-            Gate.setPosition(0.35);
+        if(yMode){
+            Gate.setPosition(0.8);
         }
-        if(gamepad2.b){
-            Gate.setPosition(0.65);
+        else{
+            Gate.setPosition(0.5);
         }
 
 

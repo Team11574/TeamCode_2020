@@ -1,5 +1,7 @@
 package us.ftcteam11574.teamcode2020;
 
+import android.os.Environment;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -17,6 +19,7 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvWebcam;
+import org.openftc.easyopencv.PipelineRecordingParameters;
 
 import java.util.ArrayList;
 
@@ -32,6 +35,10 @@ public class TestVisionSystem extends LinearOpMode {
     CameraClass detector = new CameraClass();
     // OpenCvCamera phoneCam; //simpler version
     OpenCvWebcam phoneCam; //more complex form
+
+    double wideSizeGoingFor = -1;
+    boolean movingToward = false;
+    boolean turned = false;
 
     ArrayList<double[]> memory = new ArrayList<double[]>(10); //the memory this robot contains,
     //stores some data between movements, to allow it to have some memory of where the block was previously.
@@ -91,6 +98,8 @@ public class TestVisionSystem extends LinearOpMode {
                 phoneCam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT);
             }
         });
+
+
         //phoneCam.openCameraDevice(); //thihs is syncrononous, which his not great, replace with the async version later which has a call back function
         telemetry.addData("4","");
 
@@ -107,6 +116,7 @@ public class TestVisionSystem extends LinearOpMode {
 
         telemetry.setMsTransmissionInterval(20); //potentiall useful if need fast telemetry
         sleep(500);
+
         //interesting capabilities
         //phoneCam.setFlashlightEnabled(true);
         //phoneCam.setZoom();
@@ -115,16 +125,37 @@ public class TestVisionSystem extends LinearOpMode {
 
         telemetry.addData("Test new", v);
         telemetry.update();
-
         waitForStart();
         int k = 0;
         while(opModeIsActive())
         {
             // Delay to not waste too many CPU cycles
+            if(movingToward) {
+                for (int i = 0; 30 > i; i++) {
+                    sleep(20);
+                    double[] powers = motorPower.calcMotorsFull(0, 0, -1);
+                    drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+
+                }
+                double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+                drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                sleep((int) (wideSizeGoingFor * 5) ); //move forward based on how
+                movingToward = false; //could redo the motions to be used with the spline stuff
+
+                //after grabbed, spline to the correct position.
+                //Could keep track of stuff with PID things
+                //then coudl go into the mode of grabbing the stuff, could also make turn orient in this game to add
+                //some new features and what not.
+
+
+            }
             sleep(20);
             double wideSize = Math.abs(detector.resLargeBox[0].x -detector.resLargeBox[1].x);
             telemetry.addData("Wide",wideSize);
             if( Math.abs( (detector.resLargeBox[0].x +detector.resLargeBox[1].x)/2.0  - width/2) <20 ) {
+                movingToward = true;
+                wideSizeGoingFor = wideSize;
+                /*
                 if(wideSize < 70) {
                     double[] powers = motorPower.calcMotorsFull(.8, 0, 0);
                     drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
@@ -132,9 +163,11 @@ public class TestVisionSystem extends LinearOpMode {
                 else {
                     drive.setMotorPowers(0,0,0,0);
                 }
+
+                 */
             }
             else {
-
+                movingToward = false;
 
                 if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 > width / 2 && wideSize > 20) {
                     double[] powers = motorPower.calcMotorsFull(0, -.8, 0);
@@ -149,6 +182,7 @@ public class TestVisionSystem extends LinearOpMode {
 
                 }
             }
+
             //use the wideSize to determine how far to move foward. Also, this shoudl have some keeping of the previous positions, so it doesn't just
             //randomly move. I.e. its able to be intelligent.
 

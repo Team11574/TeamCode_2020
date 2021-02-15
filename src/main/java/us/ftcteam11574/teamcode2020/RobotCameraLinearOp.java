@@ -34,7 +34,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor Intake,  Flywheel;
-    private Servo Kick;
+    private Servo Gate;
     private CRServo LeftIn, RightIn;
     private Double power;
 
@@ -48,9 +48,8 @@ public class RobotCameraLinearOp extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Intake = hardwareMap.get(DcMotor.class, "Intake");
-        LeftIn = hardwareMap.get(CRServo.class, "LeftIn");
-        RightIn = hardwareMap.get(CRServo.class, "RightIn");
-        Kick = hardwareMap.get(Servo.class, "Kick"); //wobble
+
+        Gate = hardwareMap.get(Servo.class, "Gate");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
         DcMotor Wobble = hardwareMap.get(DcMotor.class, "Wobble");
         //Set initial position
@@ -129,26 +128,29 @@ public class RobotCameraLinearOp extends LinearOpMode {
         // Setup a variable for each drive wheel to save power level for telemetry
         int id_pos = maxId(detector.ringsReturn());
 
+        telemetry.addData("position",id_pos);
+        telemetry.update();
+
         Trajectory traj1;
 
         if(id_pos == 1) {
             traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-50, 70), Math.toRadians(180))
+                    .splineTo(new Vector2d(-45, 70 + 10), Math.toRadians(180))
                     .build();
         }
         else if(id_pos == 0) {
             traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-38, 50), Math.toRadians(180))
+                    .splineTo(new Vector2d(-28, 56), Math.toRadians(180))
                     .build();
         }
         else if(id_pos == 2) {
             traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-35, 82), Math.toRadians(180))
+                    .splineTo(new Vector2d(-28, 82+10), Math.toRadians(180))
                     .build();
         }
         else {
             traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-35, 85), Math.toRadians(180))
+                    .splineTo(new Vector2d(-28, 82+10), Math.toRadians(180))
                     .build();
         }
 
@@ -156,7 +158,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
 
 
         Trajectory traj2= drive.trajectoryBuilder(traj1.end())
-                .splineTo(new Vector2d(-48,45),Math.toRadians(-90))
+                .splineTo(new Vector2d(-48,53),Math.toRadians(-90))
                 .build();
 
 
@@ -170,7 +172,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         drive.followTrajectory(traj1);
         Wobble.setPower(.5);
         sleep(1000);
-        Kick.setPosition(1.2);
+        Gate.setPosition(1.2);
         sleep(1500);
         Wobble.setPower(-1);
         sleep(500);
