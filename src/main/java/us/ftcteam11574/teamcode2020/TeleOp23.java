@@ -77,6 +77,11 @@ public class TeleOp23 extends OpMode
     private double FlywheelPower;
     boolean aPressed = false;
     boolean intakeOn = true;
+    boolean shot = false;
+
+    double timeSinceShot = 0;
+
+    private int sleepTime = 400;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -146,7 +151,9 @@ public class TeleOp23 extends OpMode
         BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
 
 
-        /*
+        /* This gives us the option to drive without having to use the tank drive style
+        //it seperates the rotation and motion into two seperate joysticks, which can be easier on the driver
+        //
         double[] powers = motorPower.calcMotorsMax(gamepad1.right_stick_x,gamepad1.right_stick_y, gamepad1.left_stick_y);
         FLDrive.setPower(powers[0]);
         BLDrive.setPower(powers[1]);
@@ -179,13 +186,20 @@ public class TeleOp23 extends OpMode
             Intake.setPower(0);
             Stationary.setPower(0);
         }
+        if(gamepad2.x && timeSinceShot > .5) { //if you have held the button for more than .5 seconds, then continue with flywheel power
+            //if you've continued to hold the button, then only move the Kick into a different position
 
-        if(gamepad2.y){
-            Kick.setPosition(0.8);
         }
-        if(gamepad2.x){
-            Kick.setPosition(0.5);
+        else if(gamepad2.x){
+            shootRing();
+            shot = true;
         }
+        else {
+            shot = false;
+            timeSinceShot = runtime.time();
+            Flywheel.setPower(0);
+        }
+
 
 
 
@@ -210,5 +224,17 @@ public class TeleOp23 extends OpMode
     public void stop() {
 
     }
+    public void shootRing() { //this will trigger after some button has been pressed--it is blocking!
+
+        Flywheel.setPower(1); //this coudl be fine tuned to the correct power
+        sleep(400); //sleeps for some specific amount of time
+        Kick.setPosition(0.8);
+        sleep(100);
+        Kick.setPosition(0.5);
+        sleep(100);
+
+        //maybe holding the button shoots more rings
+    }
+
 
 }

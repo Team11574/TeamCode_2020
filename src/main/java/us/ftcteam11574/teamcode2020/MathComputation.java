@@ -25,7 +25,7 @@ public class MathComputation extends OpMode {
     public static double height_change = 1.1; //in meters
     boolean shooting = true;
     double add_distance = 0;
-    double value_power =0;
+    double value_power = 0;
     boolean click = false;
     double pos_p = 0;
     double time_p= 0;
