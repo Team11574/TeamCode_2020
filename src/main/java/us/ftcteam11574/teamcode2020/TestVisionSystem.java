@@ -48,7 +48,7 @@ public class TestVisionSystem extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor Intake,  Flywheel;
     private Servo Kick;
-    private CRServo LeftIn, RightIn;
+    private DcMotor Stationary;
     private Double power;
 
     @Override
@@ -61,16 +61,17 @@ public class TestVisionSystem extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         Intake = hardwareMap.get(DcMotor.class, "Intake");
-        LeftIn = hardwareMap.get(CRServo.class, "LeftIn");
-        RightIn = hardwareMap.get(CRServo.class, "RightIn");
         Kick = hardwareMap.get(Servo.class, "Kick");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
+        Stationary = hardwareMap.get(DcMotor.class, "Stationary");
 
         for (int i = 0; 10 > i; i++) {
             memory.add(new double[]{-1,-1,-1,-1}); //adds some blank data, will be replaced later as more data comes in
             //could form this like: <recognized item>, <center>, <distance away x>, <ring moving?>
 
         }
+
+
 
 
 
@@ -125,36 +126,87 @@ public class TestVisionSystem extends LinearOpMode {
 
         telemetry.addData("Test new", v);
         telemetry.update();
+        drive.setPoseEstimate(new Pose2d(0, 0, Math.toRadians(90)));
         waitForStart();
         int k = 0;
         while(opModeIsActive())
         {
-            // Delay to not waste too many CPU cycles
+
+            drive.update();
+            Pose2d myPose = drive.getPoseEstimate();
+
+            //pose information
+            telemetry.addData("x", myPose.getX());
+            telemetry.addData("y", myPose.getY());
+            telemetry.addData("heading", myPose.getHeading());
+
+
+            double distance = ( (detector.resLargeBox[0].x +detector.resLargeBox[1].x)/2.0  - width/2); //signed distance //change width/2 to something that accounts for non-central camera
             if(movingToward) {
+
+                /*
                 for (int i = 0; 30 > i; i++) {
                     sleep(20);
                     double[] powers = motorPower.calcMotorsFull(0, 0, -1);
                     drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
 
                 }
-                double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+
+                 */
+                double[] powers = motorPower.calcMotorsFull(0, .8, 0);
                 drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-                sleep((int) (wideSizeGoingFor * 5) ); //move forward based on how
+                sleep(10);
+                //maybe move back a little bit to account for the chagne in the camera position
+                /*
+                if (distance> 0 ) {
+                    double[] powers = motorPower.calcMotorsFull(0, -.8, 0);
+                    drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+
+                    sleep((int)distance * 2); //this should be fine tuned
+                }
+                else {
+                    double[] powers = motorPower.calcMotorsFull(0, .8, 0);
+                    drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+
+                    sleep((int) -distance * 2); //this should be fine tuned
+                }
+
+                 */
+
+                drive.turn(Math.toRadians(-90) );
+                Intake.setPower(-0.8);
+                Stationary.setPower(0.8);
+                powers = motorPower.calcMotorsFull(0, 1, 0);
+                drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                //should turn the intake on here
+                sleep((int) (wideSizeGoingFor * 40) ); //move forward based on how far it is away, this is most likely somewhat wrong.
+
+                powers = motorPower.calcMotorsFull(0, -1, 0);
+                drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                sleep((int) (wideSizeGoingFor * 40) );
+
+                drive.turn(Math.toRadians(90) );
+                drive.setMotorPowers(0,0,0,0);
+
                 movingToward = false; //could redo the motions to be used with the spline stuff
 
-                //after grabbed, spline to the correct position.
-                //Could keep track of stuff with PID things
-                //then coudl go into the mode of grabbing the stuff, could also make turn orient in this game to add
-                //some new features and what not.
+
 
 
             }
-            sleep(20);
-            double wideSize = Math.abs(detector.resLargeBox[0].x -detector.resLargeBox[1].x);
-            telemetry.addData("Wide",wideSize);
-            if( Math.abs( (detector.resLargeBox[0].x +detector.resLargeBox[1].x)/2.0  - width/2) <20 ) {
-                movingToward = true;
-                wideSizeGoingFor = wideSize;
+            else {
+                Intake.setPower(0);
+                Stationary.setPower(0);
+                sleep(5);
+                double wideSize = Math.abs(detector.resLargeBox[0].x - detector.resLargeBox[1].x);
+                telemetry.addData("Wide", wideSize);
+                int closeCutoff = 10;
+
+                if (Math.abs(distance) < closeCutoff) {
+                    //then, should brelifly move the correct distance
+
+                    movingToward = true;
+                    wideSizeGoingFor = wideSize;
                 /*
                 if(wideSize < 70) {
                     double[] powers = motorPower.calcMotorsFull(.8, 0, 0);
@@ -165,28 +217,29 @@ public class TestVisionSystem extends LinearOpMode {
                 }
 
                  */
-            }
-            else {
-                movingToward = false;
-
-                if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 > width / 2 && wideSize > 20) {
-                    double[] powers = motorPower.calcMotorsFull(0, -.8, 0);
-                    drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-                    telemetry.addData("right", "");
                 } else {
-                    if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 < width / 2 && wideSize > 20) {
-                        double[] powers = motorPower.calcMotorsFull(0, .8, 0);
+                    movingToward = false;
+
+                    if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 > width / 2 && wideSize > closeCutoff) {
+                        double[] powers = motorPower.calcMotorsFull(0, -1, 0);
                         drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-                        telemetry.addData("left", "");
+                        telemetry.addData("right", "");
+                    } else {
+                        if ((detector.resLargeBox[0].x + detector.resLargeBox[1].x) / 2.0 < width / 2 && wideSize > closeCutoff) {
+                            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+                            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+                            telemetry.addData("left", "");
+                        } else {
+                            drive.setMotorPowers(0, 0, 0, 0);
+                        }
+
                     }
-
                 }
+
+                //use the wideSize to determine how far to move foward. Also, this shoudl have some keeping of the previous positions, so it doesn't just
+                //randomly move. I.e. its able to be intelligent.
+
             }
-
-            //use the wideSize to determine how far to move foward. Also, this shoudl have some keeping of the previous positions, so it doesn't just
-            //randomly move. I.e. its able to be intelligent.
-
-
 
 
 
@@ -195,6 +248,7 @@ public class TestVisionSystem extends LinearOpMode {
             telemetry.addData("Update!", k);
 
             telemetry.update();
+
         }
 
 

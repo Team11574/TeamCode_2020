@@ -45,7 +45,7 @@ public class testcameraTemp extends LinearOpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
 
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        //SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
 
 
@@ -113,7 +113,7 @@ public class testcameraTemp extends LinearOpMode {
             //randomly move. I.e. its able to be intelligent.
 
 
-
+            v =detector.currentTotalColor;
 
 
 

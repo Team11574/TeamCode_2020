@@ -127,9 +127,9 @@ public class CameraClass extends OpenCvPipeline {
 
         Imgproc.cvtColor(input,input,Imgproc.COLOR_RGB2HSV); //convert to HSV, and output as mat
 
-        //Checkpoint 0 /*
+
         applyBlur(input); //apply a blur to make it easier to recognize contours
-        //Checkpoint 1 /*
+
         input = inRange(input, hue_low,sat_low,value_low,hue_high,sat_high,value_high); //find the pixels within some range, and keep those. Returns a grey scale image
 
 
@@ -158,24 +158,24 @@ public class CameraClass extends OpenCvPipeline {
 
 
 
-  
+
          Mat res = findEdges(input);
-         //Checkpoint 2 /*
-            //input = res; for checkpoint 2
+
+
          Object[] output = contours(res, input); //destructive, creates the contours, and saves them to the Object class, this is mainly useful for seeing bounding
          //boxes. This probably won't be all that useful later
-        
+
         Scalar clrSearch = new Scalar(80,250,250);
             //temporarily commented out
-        //Imgproc.rectangle(input, left_search, right_search, clrSearch, 2);
-        //Imgproc.rectangle(input, small_left_search, small_right_search, clrSearch, 2);
+        Imgproc.rectangle(input, left_search, right_search, clrSearch, 2);
+        Imgproc.rectangle(input, small_left_search, small_right_search, clrSearch, 2);
         //we draw on the bounding rectangles of where we search after. This can help to see if we are searching in the right area for the rings.  
 
         
         if(boxDraw) {
             Imgproc.rectangle(input, resLargeBox[0], resLargeBox[1], clrSearch, 2); //draw the box
         }
-        // */
+
         return input;
 
     }
@@ -224,13 +224,13 @@ public class CameraClass extends OpenCvPipeline {
         for (int i = 0; i < contours.size(); i++) { //each contour is its own closed shape
             contoursPoly[i] = new MatOfPoint2f();
             Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
-                //needs to be closed, and epsilon is the accuracy of the polygons.
-            boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray())); //draws a boundign rectangle
+                //this forces it to be be closed. Epsilon/threshold for the the polygons.
+            boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray())); //draws a bounding rectangle
             centers[i] = new Point(); //saves the centers
             Imgproc.minEnclosingCircle(contoursPoly[i], centers[i], radius[i]); //creates an enclosing circle
         }
 
-        List<MatOfPoint> contoursPolyList = new ArrayList<>(contoursPoly.length);
+        List<MatOfPoint> contoursPolyList = new ArrayList<>(contoursPoly.length); //arraylist for creating the polygon
         for (MatOfPoint2f poly : contoursPoly) {
             contoursPolyList.add(new MatOfPoint(poly.toArray()));
         }
@@ -343,7 +343,7 @@ public class CameraClass extends OpenCvPipeline {
             
             if(radius[i][0] > boundingCutoff) {
                 double r2 = (radius[i][0]*radius[i][0]);
-                if(boundRect[i].tl().y > 120) {
+                if(boundRect[i].tl().y > 120) { //used to be 120, switch back
                     resLargeBox[0] = boundRect[i].tl();
                     resLargeBox[1] = boundRect[i].br();
                 }

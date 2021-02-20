@@ -1,5 +1,7 @@
 package us.ftcteam11574.teamcode2020;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -21,6 +23,8 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import us.ftcteam11574.teamcode2020.CameraClass;
 import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
 
+import static android.os.SystemClock.sleep;
+
 @TeleOp(name="Test Camera simple2 (THIS)", group="Iterative Opmode")
 public class RobotCameraLinearOp extends LinearOpMode {
 
@@ -37,9 +41,13 @@ public class RobotCameraLinearOp extends LinearOpMode {
     private Servo Gate;
     private CRServo LeftIn, RightIn;
     private Double power;
+    private Servo Kick;
 
     @Override
     public void runOpMode() {
+        FtcDashboard dashboard = FtcDashboard.getInstance();
+        telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+        dashboard.updateConfig();
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -52,9 +60,11 @@ public class RobotCameraLinearOp extends LinearOpMode {
         Gate = hardwareMap.get(Servo.class, "Gate");
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
         DcMotor Wobble = hardwareMap.get(DcMotor.class, "Wobble");
+        Kick = hardwareMap.get(Servo.class, "Kick");
         //Set initial position
         Pose2d startPose = new Pose2d(-54, 12, Math.toRadians(180));
         drive.setPoseEstimate(startPose);
+
 
 
 
@@ -112,7 +122,8 @@ public class RobotCameraLinearOp extends LinearOpMode {
         //phoneCam.setZoom();
 
         double v =detector.currentTotalColor;
-        telemetry.addData("Test new", v);
+        telemetry.addData("Test new", maxId(detector.ringsReturn()) );
+
         telemetry.update();
 
         waitForStart();
@@ -131,26 +142,28 @@ public class RobotCameraLinearOp extends LinearOpMode {
         telemetry.addData("position",id_pos);
         telemetry.update();
 
+
+        Pose2d turnPose = new Pose2d(-54, 12, Math.toRadians(90));
         Trajectory traj1;
 
         if(id_pos == 1) {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-45, 70 + 10), Math.toRadians(180))
+            traj1 = drive.trajectoryBuilder(turnPose)
+                    .forward(72)
                     .build();
         }
         else if(id_pos == 0) {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-28, 56), Math.toRadians(180))
+            traj1 = drive.trajectoryBuilder(turnPose)
+                    .forward(50)
                     .build();
         }
         else if(id_pos == 2) {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-28, 82+10), Math.toRadians(180))
+            traj1 = drive.trajectoryBuilder(turnPose)
+                    .forward(97)
                     .build();
         }
         else {
-            traj1 = drive.trajectoryBuilder(startPose)
-                    .splineTo(new Vector2d(-28, 82+10), Math.toRadians(180))
+            traj1 = drive.trajectoryBuilder(turnPose)
+                    .forward(97)
                     .build();
         }
 
@@ -168,18 +181,84 @@ public class RobotCameraLinearOp extends LinearOpMode {
         //(2100 - 500)/2000 = 0.8
 
         //Flywheel.setPower(-0.8);
+        drive.turn(Math.toRadians(-90));
 
         drive.followTrajectory(traj1);
+        drive.turn(Math.toRadians(90));
+        if(id_pos == 0 || id_pos == 2) {
+            double[] powers = motorPower.calcMotorsFull(0, -1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(1500);
+            drive.setMotorPowers(0,0,0,0);
+
+        }
+        else if(id_pos == 1) {
+            double[] powers = motorPower.calcMotorsFull(0, -1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(700);
+            drive.setMotorPowers(0,0,0,0);
+        }
         Wobble.setPower(.5);
         sleep(1000);
-        Gate.setPosition(1.2);
+        //Gate.setPosition(0); //gate doesn't seem to be working all that well, so were just relying on it falling out.
         sleep(1500);
         Wobble.setPower(-1);
         sleep(500);
         Wobble.setPower(0);
+        if(id_pos == 0 || id_pos == 2) {
+            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(1500);
+            drive.setMotorPowers(0,0,0,0);
+
+        }
+        else if(id_pos == 1) {
+            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(700);
+            drive.setMotorPowers(0,0,0,0);
+        }
+        //if id_pos == 1
+        if(id_pos == 0) {
+            drive.turn(Math.toRadians(90));
+            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(800);
+            drive.setMotorPowers(0, 0, 0, 0);
+        }
+        if(id_pos == 1) {
+            drive.turn(Math.toRadians(90));
+            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(2000);
+            drive.setMotorPowers(0, 0, 0, 0);
+        }
+        if(id_pos == 2) {
+            drive.turn(Math.toRadians(90));
+            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(3000);
+            drive.setMotorPowers(0,0,0,0);
+        }
+        double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
+        drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+        sleep(2000);
+        drive.setMotorPowers(0,0,0,0);
+        Flywheel.setPower(1); //this coudl be fine tuned to the correct power
+        sleep(2200); //sleeps for some specific amount of time
+        Kick.setPosition(0.8);
+        sleep(500);
+        Kick.setPosition(0.5);
+        sleep(500);
+        powers = motorPower.calcMotorsFull(0, -1, 0);
+        drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+        sleep(500);
+        drive.setMotorPowers(0,0,0,0);
+
+
         //drive.followTrajectory(traj2);
         //shoot the rings during this period
-        drive.followTrajectory(traj2);
+        //drive.followTrajectory(traj2);
         //drive.followTrajectory(traj3);
 
         /*

@@ -147,7 +147,7 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
         // upward (normal to the floor) using a command like the following:
-        //BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
+        BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
 
 
         leftFront = hardwareMap.get(DcMotorEx.class, "FLDrive");
@@ -406,5 +406,5 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
 
     @Override
-    public double getRawExternalHeading() { return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS).firstAngle; }
+    public double getRawExternalHeading() { return imu.getAngularOrientation().firstAngle; }
 }

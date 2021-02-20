@@ -29,6 +29,7 @@
 
 package us.ftcteam11574.teamcode2020;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -76,8 +77,10 @@ public class TeleOp23 extends OpMode
 
     private double FlywheelPower;
     boolean aPressed = false;
+    boolean bPressed = false;
     boolean intakeOn = true;
     boolean shot = false;
+    double mult = 1;
 
     double timeSinceShot = 0;
 
@@ -88,6 +91,9 @@ public class TeleOp23 extends OpMode
      */
     @Override
     public void init() {
+
+
+
         telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -111,6 +117,7 @@ public class TeleOp23 extends OpMode
         BLDrive.setDirection(DcMotor.Direction.REVERSE);
         FRDrive.setDirection(DcMotor.Direction.FORWARD);
         BRDrive.setDirection(DcMotor.Direction.FORWARD);
+        Stationary.setDirection(DcMotor.Direction.REVERSE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -141,25 +148,30 @@ public class TeleOp23 extends OpMode
 
         //Flywheel setting
         Flywheel.setPower(gamepad2.right_stick_y);
+        telemetry.addData("power",gamepad2.right_stick_y);
         Wobble.setPower(gamepad2.left_stick_y); //initialize to the correct position.
 
         //Mecanum drive
+        /*
+        FRDrive.setPower( (gamepad1.right_stick_y + gamepad1.right_stick_x) * mult );
+        BRDrive.setPower( (gamepad1.right_stick_y - gamepad1.right_stick_x)*mult );
+        FLDrive.setPower( (gamepad1.left_stick_y - gamepad1.left_stick_x) * mult );
+        BLDrive.setPower( (gamepad1.left_stick_y + gamepad1.left_stick_x) * mult );
+        */
 
-        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
-        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
-        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
-        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
-
-
-        /* This gives us the option to drive without having to use the tank drive style
+        //This gives us the option to drive without having to use the tank drive style
         //it seperates the rotation and motion into two seperate joysticks, which can be easier on the driver
         //
-        double[] powers = motorPower.calcMotorsMax(gamepad1.right_stick_x,gamepad1.right_stick_y, gamepad1.left_stick_y);
-        FLDrive.setPower(powers[0]);
-        BLDrive.setPower(powers[1]);
-        BRDrive.setPower(powers[2]);
-        FRDrive.setPower(powers[3]);
-        */
+
+        double[] powers = motorPower.calcMotorsMax(-gamepad1.right_stick_x,gamepad1.right_stick_y, -gamepad1.left_stick_y);
+
+        double motorPow = Math.max(Math.abs(gamepad1.right_stick_x)+Math.abs(gamepad1.right_stick_y) ,Math.abs(gamepad1.left_stick_y));
+        FLDrive.setPower(powers[0] * motorPow);
+        BLDrive.setPower(powers[1]* motorPow);
+        BRDrive.setPower(powers[2]* motorPow);
+        FRDrive.setPower(powers[3]* motorPow);
+
+
 
         //Always on intake
         Intake.setPower(-0.8);
@@ -169,7 +181,19 @@ public class TeleOp23 extends OpMode
         //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
         //(1200-500)/2000 = 0.35
         //(1800 - 500)/2000 = 0.65
-
+        telemetry.addData("A on", intakeOn);
+        if(gamepad1.b && !bPressed) {
+            if(mult == 0.8) {
+                mult = 1;
+            }
+            else {
+                mult = 0.8;
+            }
+            bPressed = true;
+        }
+        if(!gamepad1.b) {
+            bPressed = false;
+        }
         if(!aPressed && gamepad1.a) {
             aPressed = true;
             intakeOn = !intakeOn;
@@ -186,9 +210,9 @@ public class TeleOp23 extends OpMode
             Intake.setPower(0);
             Stationary.setPower(0);
         }
-        if(gamepad2.x && timeSinceShot > .5) { //if you have held the button for more than .5 seconds, then continue with flywheel power
+        if(gamepad1.x && runtime.time()-timeSinceShot > 1) { //if you have held the button for more than .5 seconds, then continue with flywheel power
             //if you've continued to hold the button, then only move the Kick into a different position
-
+            timeSinceShot = runtime.time();
         }
         else if(gamepad2.x){
             shootRing();
@@ -204,10 +228,10 @@ public class TeleOp23 extends OpMode
 
 
         if(gamepad2.a){
-            Gate.setPosition(0.35);
+            Gate.setPosition(.35); //these don't move it enough.
         }
         if(gamepad2.b){
-            Gate.setPosition(0.65);
+            Gate.setPosition(.65);
         }
 
 
@@ -226,12 +250,14 @@ public class TeleOp23 extends OpMode
     }
     public void shootRing() { //this will trigger after some button has been pressed--it is blocking!
 
-        Flywheel.setPower(1); //this coudl be fine tuned to the correct power
-        sleep(400); //sleeps for some specific amount of time
+        //Flywheel.setPower(1); //this coudl be fine tuned to the correct power
+        //sleep(1200); //sleeps for some specific amount of time
         Kick.setPosition(0.8);
-        sleep(100);
+        Flywheel.setPower(-1);
+        sleep(500);
         Kick.setPosition(0.5);
-        sleep(100);
+        Flywheel.setPower(-1);
+        sleep(500);
 
         //maybe holding the button shoots more rings
     }
