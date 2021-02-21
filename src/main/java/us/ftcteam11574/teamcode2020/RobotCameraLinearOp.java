@@ -167,7 +167,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         }
         else if(id_pos == 2) {
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(150)
+                    .forward(90)
                     .build();
         }
         else {
@@ -175,10 +175,6 @@ public class RobotCameraLinearOp extends LinearOpMode {
                     .forward(170)
                     .build();
         }
-
-
-
-
 
         Trajectory traj2= drive.trajectoryBuilder(traj1.end())
                 .splineTo(new Vector2d(-48,53),Math.toRadians(-90))
@@ -254,14 +250,17 @@ public class RobotCameraLinearOp extends LinearOpMode {
         }
         double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
         drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-        sleep(2000);
+        sleep(3000);
         drive.setMotorPowers(0,0,0,0);
         Flywheel.setPower(1); //this coudl be fine tuned to the correct power
-        sleep(2200); //sleeps for some specific amount of time
+        sleep(2400); //sleeps for some specific amount of time
         Kick.setPosition(0.8);
-        sleep(500);
         Kick.setPosition(0.5);
-        sleep(500);
+        sleep(1000);
+        Kick.setPosition(0.8);
+        Kick.setPosition(0.5);
+        sleep(1000);
+        Flywheel.setPower(0.0);
         powers = motorPower.calcMotorsFull(0, -1, 0);
         drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
         sleep(500);
