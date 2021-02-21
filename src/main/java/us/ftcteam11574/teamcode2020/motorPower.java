@@ -1,7 +1,13 @@
 package us.ftcteam11574.teamcode2020;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.lang.Math;
+
+import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
+
 //Configuration looks like this
 // \/
 // /\
@@ -13,8 +19,8 @@ public class motorPower {
         System.out.println(calcv_0(-0.813,.495,1.22,50));
     }
     */
-
-
+    public static DcMotor[] motors; //all motors
+    public static int[] positions = new int[4];
     public static final double eps = .00001; //epsiolon when computing calcv_0
     static double rampUp(double cur_time, double in_time, double low, double hi) {
         //rampUp to hi from hi to low
@@ -103,6 +109,76 @@ public class motorPower {
         return new double[]{v_s[0] * mult,v_s[1] *mult,v_s[2]*mult,v_s[3]*mult};
         //turn motors to max power that they possibly can be at
     }
+
+    public static void update_position() {
+        //update positions with whatever the current positions are
+        for (int i = 0; motors.length > i; i++) {
+            positions[i] = motors[i].getCurrentPosition();
+        }
+    }
+    //potentially useful for moving with encoders
+    public void moveDirMaxRamp(double vx, double vy, double rot, double dist, SampleMecanumDrive drive) {
+
+        Robot.resetTime();
+        update_position(); //current positiosn are now the "zeroes"
+        //double cur_time = Robot.timeElapsed();
+        double[] powers = motorPower.calcMotorsMax(vx, vy, rot);
+        for (int i = 0; Robot.motors.length > i; i++) {
+            motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            motors[i].setTargetPosition(positions[i] + (int) ( (Math.abs(powers[i])/powers[i]) * dist)); //go to current position, plus whatever position we have to move at
+
+        }
+        Robot.setMotorsMax(powers, 1);
+        ElapsedTime runtime = new ElapsedTime();
+        runtime.reset(); //reset before we start
+        while (!checkDone()) { //need to check if some are done
+            double len = motorPower.rampUp(runtime.milliseconds(),500,0,1); //not sure if 0 to one is the right thing to do, but I can test that
+
+
+            drive.setMotorPowers(powers[0]*len, powers[1]*len, powers[2]*len, powers[3]*len);
+
+
+        }
+
+    }
+    public boolean checkDone() { //true if done
+
+
+        //return true when done
+       //ignoring the run time aspect.
+        //if we try this, need to reset the time everytime it starts
+
+        //for now, we are going to ignore problems with it not finishing what its doing.
+
+        if (motorsFinished() >= 4 && Robot.timeElapsed() > 50) { //150 milli before it will end
+            return true; //expiermental code here
+        }
+
+
+       /*
+       if(Robot.motorsFinished() >= 2) {
+           return true;
+           //then done
+       }
+
+        */
+
+
+        return false;
+    }
+    public static int motorsFinished() {
+        int finished = 0;
+        for (int i =0; motors.length > i; i++) {
+            //(motors[i].getCurrentPosition() > motors[i].getTargetPosition()) //need to check if its positve or negative first
+            //might have problem with isBusy
+            //!motors[i].isBusy() ||
+            if ((motors[i].getPower() < 0 && (motors[i].getCurrentPosition() <= motors[i].getTargetPosition())) || (motors[i].getPower() > 0 && (motors[i].getCurrentPosition() >= motors[i].getTargetPosition()))) {
+                finished++;
+            }
+        }
+        return finished;
+    }
+
 
     /*
     static double test_calcMotors(double vx,double vy, double rot) {

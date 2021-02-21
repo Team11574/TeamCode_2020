@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -19,6 +20,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.Arrays;
 
 import us.ftcteam11574.teamcode2020.CameraClass;
 import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
@@ -54,6 +57,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         // step (using the FTC Robot Controller app on the phone).
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
 
         Intake = hardwareMap.get(DcMotor.class, "Intake");
 
@@ -113,6 +117,8 @@ public class RobotCameraLinearOp extends LinearOpMode {
         }
 
          */
+
+        motorPower.motors = new DcMotor[]{hardwareMap.get(DcMotorEx.class, "FLDrive"), hardwareMap.get(DcMotorEx.class, "BLDrive"), hardwareMap.get(DcMotorEx.class, "BRDrive"), hardwareMap.get(DcMotorEx.class, "FRDrive")};
         telemetry.update();
 
         telemetry.setMsTransmissionInterval(20); //potentiall useful if need fast telemetry
@@ -145,27 +151,31 @@ public class RobotCameraLinearOp extends LinearOpMode {
 
         Pose2d turnPose = new Pose2d(-54, 12, Math.toRadians(90));
         Trajectory traj1;
+        motorPower m = new motorPower();
+
+        //m.moveDirMaxRamp(0,1,0,1000,drive);
 
         if(id_pos == 1) {
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(72)
+                    .forward(120) //need to go further.
                     .build();
         }
         else if(id_pos == 0) {
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(50)
+                    .forward(90)
                     .build();
         }
         else if(id_pos == 2) {
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(97)
+                    .forward(150)
                     .build();
         }
         else {
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(97)
+                    .forward(170)
                     .build();
         }
+
 
 
 
@@ -173,8 +183,8 @@ public class RobotCameraLinearOp extends LinearOpMode {
         Trajectory traj2= drive.trajectoryBuilder(traj1.end())
                 .splineTo(new Vector2d(-48,53),Math.toRadians(-90))
                 .build();
-
-
+        //
+        //
 
 
         //(900-500)/2000 = 0.2
@@ -188,6 +198,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         if(id_pos == 0 || id_pos == 2) {
             double[] powers = motorPower.calcMotorsFull(0, -1, 0);
             drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+
             sleep(1500);
             drive.setMotorPowers(0,0,0,0);
 
@@ -199,6 +210,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
             drive.setMotorPowers(0,0,0,0);
         }
         Wobble.setPower(.5);
+        Gate.setPosition(.1);
         sleep(1000);
         //Gate.setPosition(0); //gate doesn't seem to be working all that well, so were just relying on it falling out.
         sleep(1500);

@@ -142,6 +142,7 @@ public class TestVisionSystem extends LinearOpMode {
 
 
             double distance = ( (detector.resLargeBox[0].x +detector.resLargeBox[1].x)/2.0  - width/2); //signed distance //change width/2 to something that accounts for non-central camera
+            telemetry.addData("distance",distance);
             if(movingToward) {
 
                 /*
@@ -201,6 +202,7 @@ public class TestVisionSystem extends LinearOpMode {
                 double wideSize = Math.abs(detector.resLargeBox[0].x - detector.resLargeBox[1].x);
                 telemetry.addData("Wide", wideSize);
                 int closeCutoff = 10;
+
 
                 if (Math.abs(distance) < closeCutoff) {
                     //then, should brelifly move the correct distance

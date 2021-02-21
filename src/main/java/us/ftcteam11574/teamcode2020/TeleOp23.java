@@ -33,6 +33,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -75,11 +76,12 @@ public class TeleOp23 extends OpMode
     private Servo Gate = null;
     private Servo Kick = null;
     private CRServo Roller = null;
+    private CRServo Drop = null;
 
     private double FlywheelPower;
     boolean aPressed = false;
     boolean bPressed = false;
-    boolean intakeOn = true;
+    boolean intakeOn = false;
     boolean shot = false;
     double mult = 1;
 
@@ -111,6 +113,7 @@ public class TeleOp23 extends OpMode
         Gate = hardwareMap.get(Servo.class, "Gate");
         Kick = hardwareMap.get(Servo.class, "Kick");
         Roller = hardwareMap.get(CRServo.class, "Roller");
+        Drop = hardwareMap.get(CRServo.class, "Drop");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -151,7 +154,8 @@ public class TeleOp23 extends OpMode
         //Flywheel setting
         Flywheel.setPower(gamepad2.right_stick_y);
         telemetry.addData("power",gamepad2.right_stick_y);
-        Wobble.setPower(gamepad2.left_stick_y); //initialize to the correct position.
+        Wobble.setPower(gamepad2.left_stick_y*.4); //initialize to the correct position.
+        Roller.setPower(0.65);
 
         //Mecanum drive
 
@@ -160,9 +164,7 @@ public class TeleOp23 extends OpMode
         FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
         BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
 
-        if(Math.abs(gamepad1.left_stick_x)>0 || Math.abs(gamepad1.right_stick_x)>0){
 
-        }
 
 
         //This gives us the option to drive without having to use the tank drive style
@@ -176,15 +178,12 @@ public class TeleOp23 extends OpMode
         BLDrive.setPower(powers[1]* motorPow);
         BRDrive.setPower(powers[2]* motorPow);
         FRDrive.setPower(powers[3]* motorPow);
+        telemetry.addData("Powers",""+ powers[0] + "," +powers[1] + "," + powers[2]+"," + powers[3]);
 
          */
 
 
-        //Always on intake
-        Intake.setPower(-0.8);
-        Stationary.setPower(0.8);
-        Roller.setPower(0.65);
-
+        
 
         //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
         //(1200-500)/2000 = 0.35
@@ -202,46 +201,53 @@ public class TeleOp23 extends OpMode
         if(!gamepad1.b) {
             bPressed = false;
         }
-        if(!aPressed && gamepad1.a) {
+        if(!aPressed && gamepad2.y) {
             aPressed = true;
             intakeOn = !intakeOn;
         }
-        if(!gamepad1.a) {
+        if(!gamepad2.y) {
             aPressed = false;
         }
 
         if(intakeOn){
+
             Intake.setPower(-0.8);
             Stationary.setPower(0.8);
         }
         else {
-            Intake.setPower(0);
-            Stationary.setPower(0);
+            Intake.setPower(gamepad2.dpad_down?0:0);
+            Stationary.setPower(gamepad2.dpad_down?-.42134:0);
+
         }
-        if(gamepad1.x && runtime.time()-timeSinceShot > 1) { //if you have held the button for more than .5 seconds, then continue with flywheel power
+        //&& false is temporary.
+        if(false && gamepad1.x && runtime.time()-timeSinceShot > 1) { //if you have held the button for more than .5 seconds, then continue with flywheel power
             //if you've continued to hold the button, then only move the Kick into a different position
             timeSinceShot = runtime.time();
         }
         else if(gamepad2.x){
-            shootRing();
+            //shootRing();
+            Kick.setPosition(0.5);
             shot = true;
         }
         else {
+            Kick.setPosition(0.8);
             shot = false;
             timeSinceShot = runtime.time();
-            Flywheel.setPower(0);
         }
-
-
 
 
         if(gamepad2.a){
-            Gate.setPosition(.35); //these don't move it enough.
+            Gate.setPosition(0.09); //these don't move it enough.
         }
         if(gamepad2.b){
-            Gate.setPosition(.65);
+            Gate.setPosition(.89);
+            //telemetry.addData("range", gamepad2.right_stick_x);
         }
-
+        if(gamepad1.a){
+            Drop.setPower(0.65);
+            sleep(100);
+            Drop.setPower(0.0);
+        }
 
 
 
@@ -258,13 +264,11 @@ public class TeleOp23 extends OpMode
     }
     public void shootRing() { //this will trigger after some button has been pressed--it is blocking!
 
-        //Flywheel.setPower(1); //this coudl be fine tuned to the correct power
+        //Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
         //sleep(1200); //sleeps for some specific amount of time
         Kick.setPosition(0.8);
-        Flywheel.setPower(-1);
         sleep(500);
         Kick.setPosition(0.5);
-        Flywheel.setPower(-1);
         sleep(500);
 
         //maybe holding the button shoots more rings
