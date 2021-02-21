@@ -74,6 +74,7 @@ public class TeleOp23 extends OpMode
     private DcMotor Stationary = null;
     private Servo Gate = null;
     private Servo Kick = null;
+    private CRServo Roller = null;
 
     private double FlywheelPower;
     boolean aPressed = false;
@@ -109,6 +110,7 @@ public class TeleOp23 extends OpMode
         Wobble = hardwareMap.get(DcMotor.class, "Wobble");
         Gate = hardwareMap.get(Servo.class, "Gate");
         Kick = hardwareMap.get(Servo.class, "Kick");
+        Roller = hardwareMap.get(CRServo.class, "Roller");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -152,17 +154,21 @@ public class TeleOp23 extends OpMode
         Wobble.setPower(gamepad2.left_stick_y); //initialize to the correct position.
 
         //Mecanum drive
-        /*
-        FRDrive.setPower( (gamepad1.right_stick_y + gamepad1.right_stick_x) * mult );
-        BRDrive.setPower( (gamepad1.right_stick_y - gamepad1.right_stick_x)*mult );
-        FLDrive.setPower( (gamepad1.left_stick_y - gamepad1.left_stick_x) * mult );
-        BLDrive.setPower( (gamepad1.left_stick_y + gamepad1.left_stick_x) * mult );
-        */
+
+        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
+        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
+        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
+
+        if(Math.abs(gamepad1.left_stick_x)>0 || Math.abs(gamepad1.right_stick_x)>0){
+
+        }
+
 
         //This gives us the option to drive without having to use the tank drive style
         //it seperates the rotation and motion into two seperate joysticks, which can be easier on the driver
         //
-
+        /*
         double[] powers = motorPower.calcMotorsMax(-gamepad1.right_stick_x,gamepad1.right_stick_y, -gamepad1.left_stick_y);
 
         double motorPow = Math.max(Math.abs(gamepad1.right_stick_x)+Math.abs(gamepad1.right_stick_y) ,Math.abs(gamepad1.left_stick_y));
@@ -171,11 +177,13 @@ public class TeleOp23 extends OpMode
         BRDrive.setPower(powers[2]* motorPow);
         FRDrive.setPower(powers[3]* motorPow);
 
+         */
 
 
         //Always on intake
         Intake.setPower(-0.8);
         Stationary.setPower(0.8);
+        Roller.setPower(0.65);
 
 
         //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
