@@ -155,7 +155,7 @@ public class TeleOp23 extends OpMode
         Flywheel.setPower(gamepad2.right_stick_y);
         telemetry.addData("power",gamepad2.right_stick_y);
         Wobble.setPower(gamepad2.left_stick_y*.4); //initialize to the correct position.
-        Roller.setPower(0.65);
+
 
         //Mecanum drive
 
@@ -210,11 +210,12 @@ public class TeleOp23 extends OpMode
         }
 
         if(intakeOn){
-
+            Roller.setPower(0.65);
             Intake.setPower(-0.8);
             Stationary.setPower(0.8);
         }
         else {
+            Roller.setPower(0.0 );
             Intake.setPower(gamepad2.dpad_down?0:0);
             Stationary.setPower(gamepad2.dpad_down?-.42134:0);
 

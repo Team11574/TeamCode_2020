@@ -155,24 +155,24 @@ public class RobotCameraLinearOp extends LinearOpMode {
 
         //m.moveDirMaxRamp(0,1,0,1000,drive);
 
-        if(id_pos == 1) {
+        if(id_pos == 1) { //1 rings
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(120) //need to go further.
+                    .forward(110) //need to go further.
                     .build();
         }
-        else if(id_pos == 0) {
+        else if(id_pos == 0) { //0 rings
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(90)
+                    .forward(80)
                     .build();
         }
-        else if(id_pos == 2) {
+        else if(id_pos == 2) { //4 rings
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(90)
+                    .forward(140)
                     .build();
         }
-        else {
+        else { //4 rings
             traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(170)
+                    .forward(140)
                     .build();
         }
 
@@ -206,7 +206,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
             drive.setMotorPowers(0,0,0,0);
         }
         Wobble.setPower(.5);
-        Gate.setPosition(.1);
+        Gate.setPosition(.9);
         sleep(1000);
         //Gate.setPosition(0); //gate doesn't seem to be working all that well, so were just relying on it falling out.
         sleep(1500);
@@ -250,17 +250,38 @@ public class RobotCameraLinearOp extends LinearOpMode {
         }
         double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
         drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-        sleep(3000);
+        sleep(2750);
+        if(id_pos == 1) {
+            drive.turn(-5);
+        }
         drive.setMotorPowers(0,0,0,0);
-        Flywheel.setPower(1); //this coudl be fine tuned to the correct power
-        sleep(2400); //sleeps for some specific amount of time
-        Kick.setPosition(0.8);
+        Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
+        sleep(1600); //sleeps for some specific amount of time
+        //Kick.setPosition(0.8);
         Kick.setPosition(0.5);
-        sleep(1000);
+        sleep(200);
         Kick.setPosition(0.8);
+
+
+        Flywheel.setPower(-1);
+        sleep(800); //extra time to gain power
+
+        sleep(200);
         Kick.setPosition(0.5);
-        sleep(1000);
+        sleep(200);
+        Kick.setPosition(0.8);
+
+        Flywheel.setPower(-1);
+        sleep(800); //extra time to gain power
+
+        sleep(200);
+        Kick.setPosition(0.5);
+        sleep(200);
+        Kick.setPosition(0.8);
         Flywheel.setPower(0.0);
+
+        Flywheel.setPower(0.0);
+
         powers = motorPower.calcMotorsFull(0, -1, 0);
         drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
         sleep(500);
