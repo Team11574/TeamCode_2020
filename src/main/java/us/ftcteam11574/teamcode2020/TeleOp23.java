@@ -238,10 +238,10 @@ public class TeleOp23 extends OpMode
 
 
         if(gamepad2.a){
-            Gate.setPosition(0.09); //these don't move it enough.
+            Gate.setPosition(0.09); //Finished
         }
         if(gamepad2.b){
-            Gate.setPosition(.89);
+            Gate.setPosition(.89); //Finished
             //telemetry.addData("range", gamepad2.right_stick_x);
         }
         if(gamepad1.a){
