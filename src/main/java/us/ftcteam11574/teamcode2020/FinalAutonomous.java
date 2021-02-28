@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -42,7 +43,7 @@ public class FinalAutonomous extends LinearOpMode {
     private Double power;
     private Servo Kick;
     //Wobble encoder stuff
-
+    //VoltageSensor voltSensor; //If possible, I should try to implement something that keeps motor pwoer as a factor, not exactly sure how though
     @Override
     public void runOpMode() {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -64,6 +65,7 @@ public class FinalAutonomous extends LinearOpMode {
         //Wobble run using encoder
         Wobble.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         Wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Flywheel.setMode(DcMotor.RunMode.RUN_USING_ENCODER); //use the encoders to keep the speed accurate
 
         // Initialize webcam
         telemetry.addData("1","");
@@ -121,14 +123,23 @@ public class FinalAutonomous extends LinearOpMode {
         //phoneCam.setZoom();
 
         double v =detector.currentTotalColor;
-        telemetry.addData("Test new", maxId(detector.ringsReturn()) );
+
 
         telemetry.update();
+        int id_pos = maxId(detector.ringsReturn());
+        while(!isStarted()) {
+            id_pos = maxId(detector.ringsReturn());
+            telemetry.addData("Camera position guess",id_pos);
+            telemetry.update();
+            sleep(250); //dont read too fast, otherwise the input will be a null array. This is much below the fps of 30
+        }
 
-        waitForStart();
+
+        waitForStart(); //need to do something while waiting
+
 
         //Store the position indicated by ring stack
-        int id_pos = maxId(detector.ringsReturn());
+        //id_pos = maxId(detector.ringsReturn());
         telemetry.addData("position",id_pos);
         telemetry.update();
 
@@ -141,7 +152,7 @@ public class FinalAutonomous extends LinearOpMode {
         Trajectory traj2;
         motorPower m = new motorPower();
 
-        //m.moveDirMaxRamp(0,1,0,1000,drive);
+
 
         if(id_pos == 1) { //1 rings
             traj1 = drive.trajectoryBuilder(turnPose)
@@ -172,7 +183,7 @@ public class FinalAutonomous extends LinearOpMode {
         int yadjust = 0;
         int xadjust = 0;
         if(id_pos == 0){
-            yadjust = 50;
+            yadjust = 66;
             xadjust = -15;
         }else if(id_pos == 2){
             yadjust = 70;
@@ -206,107 +217,90 @@ public class FinalAutonomous extends LinearOpMode {
         Wobble.setPower(0);
 
         //Last trajectory for powershots. This needs to be tuned!
+            //For me, the spline is acting very odd. For now, I'll use a turn and backwards movement
+        /*
         Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
-                .splineTo(new Vector2d(40, -20), Math.toRadians(180))
+                .splineTo(new Vector2d(40, 10), Math.toRadians(180))
                 .build();
         drive.followTrajectory(traj3);
+         */
+        drive.turn(Math.toRadians(90));
+        if(id_pos == 1) {
+            drive.followTrajectory(drive.trajectoryBuilder(new Pose2d(traj2.end().component1(), traj2.end().component2(), traj2.end().component3() + Math.toRadians(90)))
+                    .splineTo(new Vector2d(-25, 20), Math.toRadians(180))
+                    .build());
+        }
+        if(id_pos != 1) {
+            drive.followTrajectory(drive.trajectoryBuilder(new Pose2d(traj2.end().component1(), traj2.end().component2(), traj2.end().component3() + Math.toRadians(90)))
+                    .splineTo(new Vector2d(-10, -20), Math.toRadians(180)) //this needs some testing to ensure the y component is  correct
+                    .build());
+        }
 
+
+
+
+        //we reangle the laucnher so we are facing towards the correct location
+        drive.turn(Math.toRadians(-25) ); //this is the angle to shoot towards the high goal-- needs lots of battery power to make this shot
+        //should probably try to set the flywheel power to the
+        //then we shoot.\
+
+
+
+
+        telemetry.update();
+        //we base off of the 14.00 power. If it falls to much below that amoutn the flywheel will work inconsitantely
         /*
-        if(id_pos == 0 || id_pos == 2) {
-            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
-            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-            sleep(1500);
-            drive.setMotorPowers(0,0,0,0);
+        "
 
-        }
-        else if(id_pos == 1) {
-            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
-            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-            sleep(700);
-            drive.setMotorPowers(0,0,0,0);
-        }
-        //if id_pos == 1
-        if(id_pos == 0) {
-            drive.turn(Math.toRadians(90));
-            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
-            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-            sleep(800);
-            drive.setMotorPowers(0, 0, 0, 0);
-        }
-        if(id_pos == 1) {
-            drive.turn(Math.toRadians(90));
-            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
-            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-            sleep(2000);
-            drive.setMotorPowers(0, 0, 0, 0);
-        }
-        if(id_pos == 2) {
-            drive.turn(Math.toRadians(90));
-            double[] powers = motorPower.calcMotorsFull(0, 1, 0);
-            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-            sleep(3000);
-            drive.setMotorPowers(0,0,0,0);
-        }
-        double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
-        drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-        sleep(2750);
-        if(id_pos == 1) {
-            drive.turn(-5);
-        }
-        drive.setMotorPowers(0,0,0,0);
-        Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
-        sleep(1600); //sleeps for some specific amount of time
-        //Kick.setPosition(0.8);
-        Kick.setPosition(0.5);
-        sleep(200);
-        Kick.setPosition(0.8);
-
-
-        Flywheel.setPower(-1);
-        sleep(800); //extra time to gain power
-
-        sleep(200);
-        Kick.setPosition(0.5);
-        sleep(200);
-        Kick.setPosition(0.8);
-
-        Flywheel.setPower(-1);
-        sleep(800); //extra time to gain power
-
-        sleep(200);
-        Kick.setPosition(0.5);
-        sleep(200);
-        Kick.setPosition(0.8);
-        Flywheel.setPower(0.0);
-
-        Flywheel.setPower(0.0);
-
-        powers = motorPower.calcMotorsFull(0, -1, 0);
-        drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-        sleep(500);
-        drive.setMotorPowers(0,0,0,0);
-
-
-        //drive.followTrajectory(traj2);
-        //shoot the rings during this period
-        //drive.followTrajectory(traj2);
-        //drive.followTrajectory(traj3);
-
-        /*d
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
-        drive.followTrajectory(traj2);
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
-        drive.followTrajectory(traj3);
-        Kick.setPosition(0.2);
-        Kick.setPosition(.45);
-        drive.followTrajectory(traj4);
-        sleep(1000);
-        Flywheel.setPower(0.0);
-        drive.followTrajectory(traj5);
 
          */
+        //-----Shot 1-----
+        Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
+        sleep((long) (1400) ); //sleeps for some specific amount of time. Should be long enough to achieve the right speed with all motor powers.
+        //Kick.setPosition(0.8);
+        Kick.setPosition(0.5);
+        sleep(50); //wait less time, to hopefully decrease odds of a double or triple shot at once.
+        //This means that we ned to set the robot up so that the pusher is very close to the rings
+        Kick.setPosition(0.7);
+        //-----Shot 1-----
+
+        //-----Hold 1-----
+        Flywheel.setPower(-1);
+        //drive.turn(Math.toRadians(-12) );
+        sleep(300); //we don't need to keep it for tha tlong before the next shot
+        Kick.setPosition(0.5);
+        sleep(150);
+        Kick.setPosition(0.8);
+        //-----Hold 1-----
+
+        //-----Shot 2-----
+        Flywheel.setPower(-1);
+        sleep(600); //
+        Kick.setPosition(0.5);
+        sleep(100);
+        Kick.setPosition(0.7);
+        //-----Shot 2-----
+
+        //-----Hold 2-----
+        Flywheel.setPower(-1);
+        //drive.turn(Math.toRadians(-12) );
+        sleep(200); //we don't need to keep it for tha tlong before the next shot
+
+        sleep(150);
+        Kick.setPosition(0.8);
+        //-----Hold 2-----
+
+        //-----Shot 3-----
+        Flywheel.setPower(-1);
+        sleep(200);
+        Kick.setPosition(0.5);
+        sleep(200);
+        Kick.setPosition(0.8);
+        Flywheel.setPower(0.0);
+        //-----Shot 3-----
+
+        Flywheel.setPower(0.0);
+
 
 
     }

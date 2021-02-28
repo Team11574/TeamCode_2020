@@ -174,6 +174,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
             traj1 = drive.trajectoryBuilder(turnPose)
                     .forward(140)
                     .build();
+            id_pos = 2;
         }
 
         Trajectory traj2= drive.trajectoryBuilder(traj1.end())
@@ -248,15 +249,31 @@ public class RobotCameraLinearOp extends LinearOpMode {
             sleep(3000);
             drive.setMotorPowers(0,0,0,0);
         }
-        double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
-        drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
-        sleep(2750);
+        if(id_pos == 0) {
+            double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(2750);
+        }
         if(id_pos == 1) {
-            drive.turn(-5);
+            double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(2750);
+            powers = motorPower.calcMotorsFull(0, 0, -1); //strafe somewhat slowly, since it probably won't be consistent
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(150);
+
+        }
+        else if(id_pos == 2) {
+            double[] powers = motorPower.calcMotorsFull(-.8, 0, 0); //strafe somewhat slowly, since it probably won't be consistent
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(2250);
+            powers = motorPower.calcMotorsFull(0, -1, 0); //strafe somewhat slowly, since it probably won't be consistent
+            drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
+            sleep(350);
         }
         drive.setMotorPowers(0,0,0,0);
         Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
-        sleep(1600); //sleeps for some specific amount of time
+        sleep(1300); //sleeps for some specific amount of time //must be at max battery for this to work well
         //Kick.setPosition(0.8);
         Kick.setPosition(0.5);
         sleep(200);
@@ -264,7 +281,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
 
 
         Flywheel.setPower(-1);
-        sleep(800); //extra time to gain power
+        sleep(650); //extra time to gain power
 
         sleep(200);
         Kick.setPosition(0.5);
@@ -272,7 +289,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
         Kick.setPosition(0.8);
 
         Flywheel.setPower(-1);
-        sleep(800); //extra time to gain power
+        sleep(650); //extra time to gain power
 
         sleep(200);
         Kick.setPosition(0.5);
@@ -282,7 +299,7 @@ public class RobotCameraLinearOp extends LinearOpMode {
 
         Flywheel.setPower(0.0);
 
-        powers = motorPower.calcMotorsFull(0, -1, 0);
+        double[] powers = motorPower.calcMotorsFull(0, -1, 0);
         drive.setMotorPowers(powers[0], powers[1], powers[2], powers[3]);
         sleep(500);
         drive.setMotorPowers(0,0,0,0);

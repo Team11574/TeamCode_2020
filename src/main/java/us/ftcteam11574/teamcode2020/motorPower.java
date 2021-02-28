@@ -119,19 +119,19 @@ public class motorPower {
     //potentially useful for moving with encoders
     public void moveDirMaxRamp(double vx, double vy, double rot, double dist, SampleMecanumDrive drive) {
 
-        Robot.resetTime();
+        //Robot.resetTime();
         update_position(); //current positiosn are now the "zeroes"
         //double cur_time = Robot.timeElapsed();
         double[] powers = motorPower.calcMotorsMax(vx, vy, rot);
-        for (int i = 0; Robot.motors.length > i; i++) {
+        for (int i = 0; motors.length > i; i++) {
             motors[i].setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motors[i].setTargetPosition(positions[i] + (int) ( (Math.abs(powers[i])/powers[i]) * dist)); //go to current position, plus whatever position we have to move at
 
         }
-        Robot.setMotorsMax(powers, 1);
+        drive.setMotorPowers(powers[0]*1, powers[1]*1, powers[2]*1, powers[3]*1);
         ElapsedTime runtime = new ElapsedTime();
         runtime.reset(); //reset before we start
-        while (!checkDone()) { //need to check if some are done
+        while (!checkDone(runtime)) { //need to check if some are done
             double len = motorPower.rampUp(runtime.milliseconds(),500,0,1); //not sure if 0 to one is the right thing to do, but I can test that
 
 
@@ -141,7 +141,7 @@ public class motorPower {
         }
 
     }
-    public boolean checkDone() { //true if done
+    public boolean checkDone(ElapsedTime runtime) { //true if done
 
 
         //return true when done
@@ -150,7 +150,7 @@ public class motorPower {
 
         //for now, we are going to ignore problems with it not finishing what its doing.
 
-        if (motorsFinished() >= 4 && Robot.timeElapsed() > 50) { //150 milli before it will end
+        if (motorsFinished() >= 4 && runtime.time() > 50) { //150 milli before it will end
             return true; //expiermental code here
         }
 
