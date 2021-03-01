@@ -87,6 +87,7 @@ public class FinalAutonomous extends LinearOpMode {
                 phoneCam.startStreaming(width, height, OpenCvCameraRotation.UPRIGHT);
             }
         });
+        sleep(1000);
         //phoneCam.openCameraDevice(); //thihs is syncrononous, which his not great, replace with the async version later which has a call back function
         telemetry.addData("4","");
 
@@ -117,7 +118,7 @@ public class FinalAutonomous extends LinearOpMode {
         telemetry.update();
 
         telemetry.setMsTransmissionInterval(20); //potentiall useful if need fast telemetry
-        sleep(500);
+
         //interesting capabilities
         //phoneCam.setFlashlightEnabled(true);
         //phoneCam.setZoom();
@@ -146,17 +147,26 @@ public class FinalAutonomous extends LinearOpMode {
         //Set initial position
         Pose2d startPose = new Pose2d(-63.75, 15.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
+
         //Establish expected position after 90 deg turn
         Pose2d turnPose = new Pose2d(-60.75, 15.75, Math.toRadians(0));
         Trajectory traj1;
+        Trajectory traj11 = null; //needs to be initlized
         Trajectory traj2;
         motorPower m = new motorPower();
 
+        //probably need a short strafe to avoid the ring
 
 
         if(id_pos == 1) { //1 rings
-            traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(110)//good distance
+
+            traj11 = drive.trajectoryBuilder(turnPose)
+                    .strafeLeft(20) //hopefully this will avoid the rings.
+                    //good distance
+                    .build();
+            traj1 = drive.trajectoryBuilder(traj11.end())
+                    .forward(110) //hopefully this will avoid the rings.
+                    //good distance
                     .build();
         }
         else if(id_pos == 0) { //0 rings
@@ -165,36 +175,49 @@ public class FinalAutonomous extends LinearOpMode {
                     .build();
         }
         else if(id_pos == 2) { //4 rings
-            traj1 = drive.trajectoryBuilder(turnPose)
+            traj11 = drive.trajectoryBuilder(turnPose)
+                    .strafeLeft(20) //hopefully this will avoid the rings.
+                    //good distance
+                    .build();
+            traj1 = drive.trajectoryBuilder(traj11.end())
                     .forward(120)
                     .build();
         }
         else { //4 rings
+            traj11 = drive.trajectoryBuilder(traj11.end())
+                    .strafeLeft(20) //hopefully this will avoid the rings.
+                    //good distance
+                    .build();
             traj1 = drive.trajectoryBuilder(turnPose)
                     .forward(120)
                     .build();
         }
         //
+
         drive.turn(Math.toRadians(-90));
+        if(id_pos != 0) {
+            drive.followTrajectory(traj11);
+        }
         drive.followTrajectory(traj1);
+
         //drive.turn(Math.toRadians(90));
 
         //Adjust position to which we spline depending on desired target.
-        int yadjust = 0;
-        int xadjust = 0;
+        double yadjust = 0;
+        double xadjust = 0;
         if(id_pos == 0){
-            yadjust = 66;
-            xadjust = -15;
+            yadjust = 15.75-23;
+            xadjust = traj1.end().component2(); //keep the same x component
         }else if(id_pos == 2){
-            yadjust = 70;
-            xadjust = 30;
+            yadjust = 15.75-23;
+            xadjust = traj1.end().component2()+10;
         } else if(id_pos == 1) {
-            yadjust = 10;
-            xadjust = 0;
-
+            yadjust = 38.75;
+            xadjust = traj1.end().component2()+10;
         }
+
         traj2 = drive.trajectoryBuilder(traj1.end())
-                .lineToLinearHeading(new Pose2d((49.25 + xadjust),(30-yadjust), Math.toRadians(90)))
+                .lineToLinearHeading(new Pose2d((xadjust),(yadjust), Math.toRadians(90)))
                 .build();
         drive.followTrajectory(traj2);
         /* Wobble isn't responding to encoders atm.
@@ -227,7 +250,7 @@ public class FinalAutonomous extends LinearOpMode {
         drive.turn(Math.toRadians(90));
         if(id_pos == 1) {
             drive.followTrajectory(drive.trajectoryBuilder(new Pose2d(traj2.end().component1(), traj2.end().component2(), traj2.end().component3() + Math.toRadians(90)))
-                    .splineTo(new Vector2d(-25, 20), Math.toRadians(180))
+                    .splineTo(new Vector2d(-40, 15), Math.toRadians(180))
                     .build());
         }
         if(id_pos != 1) {
@@ -240,7 +263,7 @@ public class FinalAutonomous extends LinearOpMode {
 
 
         //we reangle the laucnher so we are facing towards the correct location
-        drive.turn(Math.toRadians(-25) ); //this is the angle to shoot towards the high goal-- needs lots of battery power to make this shot
+        //drive.turn(Math.toRadians(-25) ); //this is the angle to shoot towards the high goal-- needs lots of battery power to make this shot
         //should probably try to set the flywheel power to the
         //then we shoot.\
 
@@ -256,12 +279,12 @@ public class FinalAutonomous extends LinearOpMode {
          */
         //-----Shot 1-----
         Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
-        sleep((long) (1400) ); //sleeps for some specific amount of time. Should be long enough to achieve the right speed with all motor powers.
+        sleep((long) (2400) ); //sleeps for some specific amount of time. Should be long enough to achieve the right speed with all motor powers.
         //Kick.setPosition(0.8);
         Kick.setPosition(0.5);
-        sleep(50); //wait less time, to hopefully decrease odds of a double or triple shot at once.
+        sleep(150); //wait less time, to hopefully decrease odds of a double or triple shot at once.
         //This means that we ned to set the robot up so that the pusher is very close to the rings
-        Kick.setPosition(0.7);
+        Kick.setPosition(0.4); //move a little forward to catch the ring
         //-----Shot 1-----
 
         //-----Hold 1-----
@@ -278,7 +301,7 @@ public class FinalAutonomous extends LinearOpMode {
         sleep(600); //
         Kick.setPosition(0.5);
         sleep(100);
-        Kick.setPosition(0.7);
+        Kick.setPosition(0.75);
         //-----Shot 2-----
 
         //-----Hold 2-----

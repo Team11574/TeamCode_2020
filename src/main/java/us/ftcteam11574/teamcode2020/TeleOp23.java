@@ -118,6 +118,13 @@ public class TeleOp23 extends OpMode
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
+
+        FLDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        FRDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BLDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        BRDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+
         FLDrive.setDirection(DcMotor.Direction.REVERSE);
         BLDrive.setDirection(DcMotor.Direction.REVERSE);
         FRDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -153,7 +160,7 @@ public class TeleOp23 extends OpMode
 
         //Flywheel setting
         Flywheel.setPower(gamepad2.right_stick_y);
-        telemetry.addData("power",gamepad2.right_stick_y);
+
         Wobble.setPower(gamepad2.left_stick_y*.4); //initialize to the correct position.
 
 
@@ -254,6 +261,11 @@ public class TeleOp23 extends OpMode
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("FL",FLDrive.getCurrentPosition());
+        telemetry.addData("FR",FRDrive.getCurrentPosition());
+        telemetry.addData("BL",BLDrive.getCurrentPosition());
+        telemetry.addData("BR",BRDrive.getCurrentPosition());
+
     }
 
     /*
