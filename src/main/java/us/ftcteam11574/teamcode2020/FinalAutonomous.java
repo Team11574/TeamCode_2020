@@ -42,8 +42,9 @@ public class FinalAutonomous extends LinearOpMode {
     private CRServo LeftIn, RightIn;
     private Double power;
     private Servo Kick;
+    private VoltageSensor batteryVoltageSensor;
     //Wobble encoder stuff
-    //VoltageSensor voltSensor; //If possible, I should try to implement something that keeps motor pwoer as a factor, not exactly sure how though
+
     @Override
     public void runOpMode() {
         FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -55,6 +56,8 @@ public class FinalAutonomous extends LinearOpMode {
         // step (using the FTC Robot Controller app on the phone).
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        //Access battery voltage
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
 
         Intake = hardwareMap.get(DcMotor.class, "Intake");
 
@@ -148,61 +151,120 @@ public class FinalAutonomous extends LinearOpMode {
         Pose2d startPose = new Pose2d(-63.75, 15.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
-        //Establish expected position after 90 deg turn
-        Pose2d turnPose = new Pose2d(-60.75, 15.75, Math.toRadians(0));
-        Trajectory traj1;
-        Trajectory traj11 = null; //needs to be initlized
-        Trajectory traj2;
+        //Trajectory traj11 = null; //needs to be initlized *****When you set it equal to null it doesn't ever redefine! So traj11 is untested and basically useless
+        Trajectory traj1, powershot, wobbleAdjust, highGoals, launchLine;
         motorPower m = new motorPower();
-
-        //probably need a short strafe to avoid the ring
 
 
         if(id_pos == 1) { //1 rings
-
+            /*
             traj11 = drive.trajectoryBuilder(turnPose)
-                    .strafeLeft(20) //hopefully this will avoid the rings.
+                    .strafeLeft(30) //hopefully this will avoid the rings.
                     //good distance
                     .build();
-            traj1 = drive.trajectoryBuilder(traj11.end())
-                    .forward(110) //hopefully this will avoid the rings.
-                    //good distance
+             */
+            traj1 = drive.trajectoryBuilder(startPose)
+                    .forward(110)//good distance
                     .build();
         }
         else if(id_pos == 0) { //0 rings
-            traj1 = drive.trajectoryBuilder(turnPose)
-                    .forward(70)
+            traj1 = drive.trajectoryBuilder(startPose)
+                    .splineTo(new Vector2d(10.75, 0), Math.toRadians(90))
                     .build();
         }
         else if(id_pos == 2) { //4 rings
+            /*
             traj11 = drive.trajectoryBuilder(turnPose)
                     .strafeLeft(20) //hopefully this will avoid the rings.
                     //good distance
                     .build();
-            traj1 = drive.trajectoryBuilder(traj11.end())
+
+             */
+            traj1 = drive.trajectoryBuilder(startPose)
                     .forward(120)
                     .build();
         }
         else { //4 rings
+            /*
             traj11 = drive.trajectoryBuilder(traj11.end())
                     .strafeLeft(20) //hopefully this will avoid the rings.
                     //good distance
                     .build();
-            traj1 = drive.trajectoryBuilder(turnPose)
+
+             */
+            traj1 = drive.trajectoryBuilder(startPose)
                     .forward(120)
                     .build();
         }
         //
 
-        drive.turn(Math.toRadians(-90));
+        //drive.turn(Math.toRadians(-90));
+        /*
         if(id_pos != 0) {
             drive.followTrajectory(traj11);
         }
+         */
+        wobbleAdjust = drive.trajectoryBuilder(traj1.end())
+                .back(-10)
+                .build();
+        powershot = drive.trajectoryBuilder(wobbleAdjust.end())
+                .splineTo(new Vector2d(-3, 2), Math.toRadians(156))
+                .build();
+        launchLine = drive.trajectoryBuilder(powershot.end())
+                .back(6)
+                .build();
+
         drive.followTrajectory(traj1);
+        //This wobble works great though
+        Wobble.setPower(.4 * (13.1 / batteryVoltageSensor.getVoltage()));
+        sleep(1000);
+        Gate.setPosition(0.89);
+        sleep(500);
+        drive.followTrajectory(wobbleAdjust);
+        Wobble.setPower(-0.7 * (13.1 / batteryVoltageSensor.getVoltage()));
+        sleep(1500);
+        Wobble.setPower(0);
+        //Position for shooting
+        drive.followTrajectory(powershot);
+        //Flywheel
+        telemetry.update();
+
+        //Alter flywheel power based on voltage to ensure consistent shots
+        double flywheelPower = -1.0 * (13.1 / batteryVoltageSensor.getVoltage());
+
+        //-----Shot 1-----
+        Kick.setPosition(0.8);
+        Flywheel.setPower(flywheelPower);
+        sleep((long) (2400) );
+        Kick.setPosition(0.4); //move a little forward to catch the ring
+        sleep(100);
+        Kick.setPosition(0.8);
+        //-----Shot 2-----
+        //drive.turn(Math.toRadians(-12) );
+        sleep(1000);
+        Kick.setPosition(0.4);
+        sleep(100);
+        Kick.setPosition(0.8);
+        //-----Shot 3-----
+        sleep(1000);
+        Kick.setPosition(0.4);
+        sleep(100);
+        Kick.setPosition(0.8);
+        //-----Shot 4 extra-----
+        sleep(1000);
+        Kick.setPosition(0.4);
+        sleep(100);
+        Kick.setPosition(0.8);
+        //Turn off flywheel
+        Flywheel.setPower(0.0);
+
+        //Launch line
+        drive.followTrajectory(launchLine);
 
         //drive.turn(Math.toRadians(90));
 
         //Adjust position to which we spline depending on desired target.
+        /*
         double yadjust = 0;
         double xadjust = 0;
         if(id_pos == 0){
@@ -216,10 +278,15 @@ public class FinalAutonomous extends LinearOpMode {
             xadjust = traj1.end().component2()+10;
         }
 
+
         traj2 = drive.trajectoryBuilder(traj1.end())
                 .lineToLinearHeading(new Pose2d((xadjust),(yadjust), Math.toRadians(90)))
                 .build();
         drive.followTrajectory(traj2);
+
+         */
+
+
         /* Wobble isn't responding to encoders atm.
         Wobble.setTargetPosition(1120/2);
         Wobble.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -230,14 +297,7 @@ public class FinalAutonomous extends LinearOpMode {
         Wobble.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         */
 
-        //This wobble works great though
-        Wobble.setPower(.4);
-        sleep(1000);
-        Gate.setPosition(0.89);
-        sleep(500);
-        Wobble.setPower(-0.6);
-        sleep(1500);
-        Wobble.setPower(0);
+
 
         //Last trajectory for powershots. This needs to be tuned!
             //For me, the spline is acting very odd. For now, I'll use a turn and backwards movement
@@ -246,7 +306,7 @@ public class FinalAutonomous extends LinearOpMode {
                 .splineTo(new Vector2d(40, 10), Math.toRadians(180))
                 .build();
         drive.followTrajectory(traj3);
-         */
+
         drive.turn(Math.toRadians(90));
         if(id_pos == 1) {
             drive.followTrajectory(drive.trajectoryBuilder(new Pose2d(traj2.end().component1(), traj2.end().component2(), traj2.end().component3() + Math.toRadians(90)))
@@ -258,7 +318,7 @@ public class FinalAutonomous extends LinearOpMode {
                     .splineTo(new Vector2d(-10, -20), Math.toRadians(180)) //this needs some testing to ensure the y component is  correct
                     .build());
         }
-
+         */
 
 
 
@@ -269,60 +329,6 @@ public class FinalAutonomous extends LinearOpMode {
 
 
 
-
-        telemetry.update();
-        //we base off of the 14.00 power. If it falls to much below that amoutn the flywheel will work inconsitantely
-        /*
-        "
-
-
-         */
-        //-----Shot 1-----
-        Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
-        sleep((long) (2400) ); //sleeps for some specific amount of time. Should be long enough to achieve the right speed with all motor powers.
-        //Kick.setPosition(0.8);
-        Kick.setPosition(0.5);
-        sleep(150); //wait less time, to hopefully decrease odds of a double or triple shot at once.
-        //This means that we ned to set the robot up so that the pusher is very close to the rings
-        Kick.setPosition(0.4); //move a little forward to catch the ring
-        //-----Shot 1-----
-
-        //-----Hold 1-----
-        Flywheel.setPower(-1);
-        //drive.turn(Math.toRadians(-12) );
-        sleep(300); //we don't need to keep it for tha tlong before the next shot
-        Kick.setPosition(0.5);
-        sleep(150);
-        Kick.setPosition(0.8);
-        //-----Hold 1-----
-
-        //-----Shot 2-----
-        Flywheel.setPower(-1);
-        sleep(600); //
-        Kick.setPosition(0.5);
-        sleep(100);
-        Kick.setPosition(0.75);
-        //-----Shot 2-----
-
-        //-----Hold 2-----
-        Flywheel.setPower(-1);
-        //drive.turn(Math.toRadians(-12) );
-        sleep(200); //we don't need to keep it for tha tlong before the next shot
-
-        sleep(150);
-        Kick.setPosition(0.8);
-        //-----Hold 2-----
-
-        //-----Shot 3-----
-        Flywheel.setPower(-1);
-        sleep(200);
-        Kick.setPosition(0.5);
-        sleep(200);
-        Kick.setPosition(0.8);
-        Flywheel.setPower(0.0);
-        //-----Shot 3-----
-
-        Flywheel.setPower(0.0);
 
 
 
