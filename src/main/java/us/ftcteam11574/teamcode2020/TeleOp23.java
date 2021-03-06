@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -60,7 +61,7 @@ import static android.os.SystemClock.sleep;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOp23", group="Iterative Opmode")
+@TeleOp(name="Final TeleOp", group="Iterative Opmode")
 public class TeleOp23 extends OpMode
 {
     // Declare OpMode members.
@@ -77,6 +78,7 @@ public class TeleOp23 extends OpMode
     private Servo Kick = null;
     private CRServo Roller = null;
     private CRServo Drop = null;
+    private VoltageSensor batteryVoltageSensor;
 
     private double FlywheelPower;
     boolean aPressed = false;
@@ -114,6 +116,7 @@ public class TeleOp23 extends OpMode
         Kick = hardwareMap.get(Servo.class, "Kick");
         Roller = hardwareMap.get(CRServo.class, "Roller");
         Drop = hardwareMap.get(CRServo.class, "Drop");
+        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -159,7 +162,7 @@ public class TeleOp23 extends OpMode
 
 
         //Flywheel setting
-        Flywheel.setPower(gamepad2.right_stick_y);
+        Flywheel.setPower( gamepad2.right_stick_y * Math.min(1,(13.1 / batteryVoltageSensor.getVoltage())));
 
         Wobble.setPower(gamepad2.left_stick_y*.4); //initialize to the correct position.
 

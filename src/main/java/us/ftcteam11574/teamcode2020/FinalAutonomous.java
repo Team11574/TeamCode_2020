@@ -151,10 +151,12 @@ public class FinalAutonomous extends LinearOpMode {
         Pose2d startPose = new Pose2d(-63.75, 15.75, Math.toRadians(90));
         drive.setPoseEstimate(startPose);
 
-        //Trajectory traj11 = null; //needs to be initlized *****When you set it equal to null it doesn't ever redefine! So traj11 is untested and basically useless
         Trajectory traj1, powershot, wobbleAdjust, highGoals, launchLine;
         motorPower m = new motorPower();
 
+
+        double angleAdjust = 0;
+        double xAdjust = 0;
 
         if(id_pos == 1) { //1 rings
             /*
@@ -164,65 +166,63 @@ public class FinalAutonomous extends LinearOpMode {
                     .build();
              */
             traj1 = drive.trajectoryBuilder(startPose)
-                    .forward(110)//good distance
+                    .splineTo(new Vector2d(10.75, 25), Math.toRadians(0))
+                    .splineTo(new Vector2d(32.75, 21),Math.toRadians(90))
                     .build();
+            angleAdjust = 3;
         }
         else if(id_pos == 0) { //0 rings
             traj1 = drive.trajectoryBuilder(startPose)
                     .splineTo(new Vector2d(10.75, 0), Math.toRadians(90))
                     .build();
+            angleAdjust = 0;
         }
         else if(id_pos == 2) { //4 rings
-            /*
-            traj11 = drive.trajectoryBuilder(turnPose)
-                    .strafeLeft(20) //hopefully this will avoid the rings.
-                    //good distance
-                    .build();
-
-             */
             traj1 = drive.trajectoryBuilder(startPose)
-                    .forward(120)
+                    .splineTo(new Vector2d(10.75, 25), Math.toRadians(0))
+                    .splineTo(new Vector2d(55.75, 5),Math.toRadians(90))
                     .build();
+            angleAdjust = 7;
+            xAdjust = -3;
         }
         else { //4 rings
-            /*
-            traj11 = drive.trajectoryBuilder(traj11.end())
-                    .strafeLeft(20) //hopefully this will avoid the rings.
-                    //good distance
-                    .build();
-
-             */
             traj1 = drive.trajectoryBuilder(startPose)
-                    .forward(120)
+                    .splineTo(new Vector2d(10.75, 25), Math.toRadians(0))
+                    .splineTo(new Vector2d(55.75, 5),Math.toRadians(90))
                     .build();
+            angleAdjust = 7;
+            xAdjust = -3;
         }
         //
 
-        //drive.turn(Math.toRadians(-90));
-        /*
-        if(id_pos != 0) {
-            drive.followTrajectory(traj11);
-        }
-         */
+
         wobbleAdjust = drive.trajectoryBuilder(traj1.end())
                 .back(-10)
                 .build();
-        powershot = drive.trajectoryBuilder(wobbleAdjust.end())
-                .splineTo(new Vector2d(-3, 2), Math.toRadians(156))
-                .build();
+        if(id_pos == 1) {
+            powershot = drive.trajectoryBuilder(wobbleAdjust.end())
+                    //.splineTo(new Vector2d(0, wobbleAdjust.end().component2()), Math.toRadians(0))
+                    .lineToLinearHeading(new Pose2d(-40, 2,Math.toRadians(151)))
+                    .build();
+        }
+        else {
+            powershot = drive.trajectoryBuilder(wobbleAdjust.end())
+                    .splineTo(new Vector2d(-3 + xAdjust, 2), Math.toRadians(156 + angleAdjust))
+                    .build();
+        }
         launchLine = drive.trajectoryBuilder(powershot.end())
                 .back(6)
                 .build();
 
         drive.followTrajectory(traj1);
         //This wobble works great though
-        Wobble.setPower(.4 * (13.1 / batteryVoltageSensor.getVoltage()));
+        Wobble.setPower(.6 * (13.1 / batteryVoltageSensor.getVoltage()));
         sleep(1000);
         Gate.setPosition(0.89);
-        sleep(500);
+        sleep(300);
         drive.followTrajectory(wobbleAdjust);
-        Wobble.setPower(-0.7 * (13.1 / batteryVoltageSensor.getVoltage()));
-        sleep(1500);
+        Wobble.setPower(-1);
+        sleep(1000);
         Wobble.setPower(0);
         //Position for shooting
         drive.followTrajectory(powershot);
@@ -236,11 +236,11 @@ public class FinalAutonomous extends LinearOpMode {
         Kick.setPosition(0.8);
         Flywheel.setPower(flywheelPower);
         sleep((long) (2400) );
-        Kick.setPosition(0.4); //move a little forward to catch the ring
+        Kick.setPosition(0.4);
         sleep(100);
         Kick.setPosition(0.8);
         //-----Shot 2-----
-        //drive.turn(Math.toRadians(-12) );
+
         sleep(1000);
         Kick.setPosition(0.4);
         sleep(100);
@@ -251,15 +251,19 @@ public class FinalAutonomous extends LinearOpMode {
         sleep(100);
         Kick.setPosition(0.8);
         //-----Shot 4 extra-----
-        sleep(1000);
+        sleep(1150);
         Kick.setPosition(0.4);
         sleep(100);
         Kick.setPosition(0.8);
         //Turn off flywheel
         Flywheel.setPower(0.0);
 
+
         //Launch line
+        telemetry.addData("Runtime",getRuntime());
+        telemetry.update();
         drive.followTrajectory(launchLine);
+
 
         //drive.turn(Math.toRadians(90));
 
