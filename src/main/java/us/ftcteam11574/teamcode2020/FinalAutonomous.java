@@ -159,31 +159,28 @@ public class FinalAutonomous extends LinearOpMode {
         double xAdjust = 0;
 
         if(id_pos == 1) { //1 rings
-            /*
-            traj11 = drive.trajectoryBuilder(turnPose)
-                    .strafeLeft(30) //hopefully this will avoid the rings.
-                    //good distance
-                    .build();
-             */
+
             traj1 = drive.trajectoryBuilder(startPose)
                     .splineTo(new Vector2d(10.75, 25), Math.toRadians(0))
-                    .splineTo(new Vector2d(32.75, 21),Math.toRadians(90))
+                    .splineTo(new Vector2d(35.75, 21),Math.toRadians(90))
                     .build();
-            angleAdjust = 3;
+            angleAdjust = 7; //test whether changing this from 3 to 7 was helpful
+            xAdjust = -2;
         }
         else if(id_pos == 0) { //0 rings
             traj1 = drive.trajectoryBuilder(startPose)
                     .splineTo(new Vector2d(10.75, 0), Math.toRadians(90))
                     .build();
-            angleAdjust = 0;
+            angleAdjust = -4; //was 2
+            xAdjust = -3;
         }
         else if(id_pos == 2) { //4 rings
             traj1 = drive.trajectoryBuilder(startPose)
                     .splineTo(new Vector2d(10.75, 25), Math.toRadians(0))
-                    .splineTo(new Vector2d(55.75, 5),Math.toRadians(90))
+                    .splineTo(new Vector2d(60.75, 0),Math.toRadians(90))
                     .build();
             angleAdjust = 7;
-            xAdjust = -3;
+            xAdjust = -2;
         }
         else { //4 rings
             traj1 = drive.trajectoryBuilder(startPose)
@@ -191,14 +188,14 @@ public class FinalAutonomous extends LinearOpMode {
                     .splineTo(new Vector2d(55.75, 5),Math.toRadians(90))
                     .build();
             angleAdjust = 7;
-            xAdjust = -3;
+            xAdjust = -2;
         }
-        //
 
 
         wobbleAdjust = drive.trajectoryBuilder(traj1.end())
                 .back(-10)
                 .build();
+
         if(id_pos == 1) {
             powershot = drive.trajectoryBuilder(wobbleAdjust.end())
                     //.splineTo(new Vector2d(0, wobbleAdjust.end().component2()), Math.toRadians(0))
@@ -207,22 +204,22 @@ public class FinalAutonomous extends LinearOpMode {
         }
         else {
             powershot = drive.trajectoryBuilder(wobbleAdjust.end())
-                    .splineTo(new Vector2d(-3 + xAdjust, 2), Math.toRadians(156 + angleAdjust))
+                    .splineTo(new Vector2d(-5 + xAdjust, 2), Math.toRadians(156 + angleAdjust))
                     .build();
         }
         launchLine = drive.trajectoryBuilder(powershot.end())
-                .back(6)
+                .back(6-xAdjust)//check whether xadjust works
                 .build();
 
         drive.followTrajectory(traj1);
         //This wobble works great though
-        Wobble.setPower(.6 * (13.1 / batteryVoltageSensor.getVoltage()));
-        sleep(1000);
+        Wobble.setPower(.7 * (13.1 / batteryVoltageSensor.getVoltage()));
+        sleep(500);
         Gate.setPosition(0.89);
-        sleep(300);
+        sleep(200);
         drive.followTrajectory(wobbleAdjust);
         Wobble.setPower(-1);
-        sleep(1000);
+        sleep(1200);
         Wobble.setPower(0);
         //Position for shooting
         drive.followTrajectory(powershot);
@@ -323,17 +320,6 @@ public class FinalAutonomous extends LinearOpMode {
                     .build());
         }
          */
-
-
-
-        //we reangle the laucnher so we are facing towards the correct location
-        //drive.turn(Math.toRadians(-25) ); //this is the angle to shoot towards the high goal-- needs lots of battery power to make this shot
-        //should probably try to set the flywheel power to the
-        //then we shoot.\
-
-
-
-
 
 
     }

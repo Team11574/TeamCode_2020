@@ -86,6 +86,7 @@ public class TeleOp23 extends OpMode
     boolean intakeOn = false;
     boolean shot = false;
     double mult = 1;
+    double driveCoefficient = 1.0;
 
     double timeSinceShot = 0;
 
@@ -164,15 +165,23 @@ public class TeleOp23 extends OpMode
         //Flywheel setting
         Flywheel.setPower( gamepad2.right_stick_y * Math.min(1,(13.1 / batteryVoltageSensor.getVoltage())));
 
-        Wobble.setPower(gamepad2.left_stick_y*.4); //initialize to the correct position.
+        Wobble.setPower(gamepad2.left_stick_y*.7); //initialize to the correct position.
 
 
         //Mecanum drive
 
-        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
-        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
-        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
-        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
+        if(gamepad1.x){
+            driveCoefficient = 0.3;
+
+        }
+        if(gamepad1.y){
+            driveCoefficient = 1.0;
+        }
+
+        FRDrive.setPower((gamepad1.right_stick_y + gamepad1.right_stick_x) * driveCoefficient);
+        BRDrive.setPower((gamepad1.right_stick_y - gamepad1.right_stick_x)*driveCoefficient);
+        FLDrive.setPower((gamepad1.left_stick_y - gamepad1.left_stick_x)*driveCoefficient);
+        BLDrive.setPower((gamepad1.left_stick_y + gamepad1.left_stick_x)* driveCoefficient);
 
 
 
@@ -226,7 +235,7 @@ public class TeleOp23 extends OpMode
         }
         else {
             Roller.setPower(0.0 );
-            Intake.setPower(gamepad2.dpad_down?0:0);
+            Intake.setPower(gamepad2.dpad_down?-.42134:0);
             Stationary.setPower(gamepad2.dpad_down?-.42134:0);
 
         }
@@ -248,10 +257,10 @@ public class TeleOp23 extends OpMode
 
 
         if(gamepad2.a){
-            Gate.setPosition(0.09); //Finished
+            Gate.setPosition(0.5); //Finished
         }
         if(gamepad2.b){
-            Gate.setPosition(.89); //Finished
+            Gate.setPosition(.899); //Finished
             //telemetry.addData("range", gamepad2.right_stick_x);
         }
         if(gamepad1.a){
@@ -259,6 +268,12 @@ public class TeleOp23 extends OpMode
             sleep(100);
             Drop.setPower(0.0);
         }
+        if(gamepad1.b){
+            Drop.setPower(-0.65);
+            sleep(100);
+            Drop.setPower(0.0);
+        }
+
 
 
 
