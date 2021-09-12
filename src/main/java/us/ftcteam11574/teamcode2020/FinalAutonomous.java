@@ -53,7 +53,7 @@ public class FinalAutonomous extends LinearOpMode {
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+        // step (using the FTC Robot Controller app on the phone)
 
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         //Access battery voltage
