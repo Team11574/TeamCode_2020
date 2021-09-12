@@ -43,7 +43,7 @@ public class FinalAutonomous extends LinearOpMode {
     private Double power;
     private Servo Kick;
     private VoltageSensor batteryVoltageSensor;
-    //Wobble encoder stuff
+    //Wobble encoder stuf
 
     @Override
     public void runOpMode() {
