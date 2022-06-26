@@ -47,19 +47,7 @@ import java.util.ArrayList;
 
 import static android.os.SystemClock.sleep;
 
-/**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
+
 
 @TeleOp(name="Final TeleOp", group="Iterative Opmode")
 public class TeleOp23 extends OpMode
@@ -86,7 +74,6 @@ public class TeleOp23 extends OpMode
     boolean intakeOn = false;
     boolean shot = false;
     double mult = 1;
-    double driveCoefficient = 1.0;
 
     double timeSinceShot = 0;
 
@@ -165,23 +152,15 @@ public class TeleOp23 extends OpMode
         //Flywheel setting
         Flywheel.setPower( gamepad2.right_stick_y * Math.min(1,(13.1 / batteryVoltageSensor.getVoltage())));
 
-        Wobble.setPower(gamepad2.left_stick_y*.7); //initialize to the correct position.
+        Wobble.setPower(gamepad2.left_stick_y*.4); //initialize to the correct position.
 
 
         //Mecanum drive
 
-        if(gamepad1.x){
-            driveCoefficient = 0.3;
-
-        }
-        if(gamepad1.y){
-            driveCoefficient = 1.0;
-        }
-
-        FRDrive.setPower((gamepad1.right_stick_y + gamepad1.right_stick_x) * driveCoefficient);
-        BRDrive.setPower((gamepad1.right_stick_y - gamepad1.right_stick_x)*driveCoefficient);
-        FLDrive.setPower((gamepad1.left_stick_y - gamepad1.left_stick_x)*driveCoefficient);
-        BLDrive.setPower((gamepad1.left_stick_y + gamepad1.left_stick_x)* driveCoefficient);
+        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
+        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
+        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
 
 
 
@@ -235,7 +214,7 @@ public class TeleOp23 extends OpMode
         }
         else {
             Roller.setPower(0.0 );
-            Intake.setPower(gamepad2.dpad_down?-.42134:0);
+            Intake.setPower(gamepad2.dpad_down?0:0);
             Stationary.setPower(gamepad2.dpad_down?-.42134:0);
 
         }
@@ -257,10 +236,10 @@ public class TeleOp23 extends OpMode
 
 
         if(gamepad2.a){
-            Gate.setPosition(0.5); //Finished
+            Gate.setPosition(0.09); //Finished
         }
         if(gamepad2.b){
-            Gate.setPosition(.899); //Finished
+            Gate.setPosition(.89); //Finished
             //telemetry.addData("range", gamepad2.right_stick_x);
         }
         if(gamepad1.a){
@@ -268,12 +247,6 @@ public class TeleOp23 extends OpMode
             sleep(100);
             Drop.setPower(0.0);
         }
-        if(gamepad1.b){
-            Drop.setPower(-0.65);
-            sleep(100);
-            Drop.setPower(0.0);
-        }
-
 
 
 

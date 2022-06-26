@@ -96,7 +96,7 @@ public class motorPower {
         double v_3 = (vx + rot/s2 - s2*v_0)/s2;
         return new double[]{v_0,v_1,-v_2,-v_3};
     }
-    static double[] calcMotorsFull(double vx,double vy, double rot) {
+    public static double[] calcMotorsFull(double vx,double vy, double rot) {
         double v_0 = calcv_0(vx,vy,rot);
         double[] v_s =  calcMotors(vx,vy,rot,v_0);
         return new double[]{v_s[0],v_s[1],v_s[2],v_s[3]};

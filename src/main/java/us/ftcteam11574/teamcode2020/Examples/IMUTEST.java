@@ -1,10 +1,16 @@
-package us.ftcteam11574.teamcode2020;
+package us.ftcteam11574.teamcode2020.Examples;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+/*
+
+    This could help
+
+ */
 
 @TeleOp(name="IMU test", group="Linear Opmode")
 public class IMUTEST extends OpMode {
