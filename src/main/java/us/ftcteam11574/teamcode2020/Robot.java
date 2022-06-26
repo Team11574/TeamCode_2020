@@ -89,15 +89,15 @@ public class Robot {
         gamepad2=gamepad2_;
         telemetry = telemetry_;
         telemetry.addData("Status", "Initialized");
-        tl  = hardwareMap.get(DcMotor.class, "tl");  //45 degrees motors supposed to be facing
-        tr  = hardwareMap.get(DcMotor.class, "tr");  //135 degrees
-        bl  = hardwareMap.get(DcMotor.class, "bl");  //225 degrees
-        br  = hardwareMap.get(DcMotor.class, "br");  //315 degrees
-        intakeR  = hardwareMap.get(DcMotor.class, "intakeR");
-        intakeL  = hardwareMap.get(DcMotor.class, "intakeL");
-        pantagraph  = hardwareMap.get(DcMotor.class, "pant");
+        tl  = hardwareMap.get(DcMotor.class, "tl");  //45 degrees //v0
+        tr  = hardwareMap.get(DcMotor.class, "tr");  //135 degrees //v1
+        bl  = hardwareMap.get(DcMotor.class, "bl");  //225 degrees //v2
+        br  = hardwareMap.get(DcMotor.class, "br");  //315 degrees //v3
+        intakeR  = hardwareMap.get(DcMotor.class, "intakeR");  //225 degrees //v2
+        intakeL  = hardwareMap.get(DcMotor.class, "intakeL");  //315 degrees //v3
+        pantagraph  = hardwareMap.get(DcMotor.class, "pant");  //315 degrees //v3
         imu = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters(); //init imu
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
         imu.initialize(parameters);
         intakeR.setDirection(DcMotorSimple.Direction.REVERSE);
