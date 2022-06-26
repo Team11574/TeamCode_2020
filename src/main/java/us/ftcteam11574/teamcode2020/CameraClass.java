@@ -16,21 +16,36 @@ import org.openftc.easyopencv.PipelineRecordingParameters;
 import java.util.ArrayList;
 import java.util.List;
 
-//PLAN:
-    //Can sample different region and look at what they seem like to figure out the edges stuff
-    //
+
+/*
+
+    This is the file that recognizes the rings from last year.
+    It uses openCV which is much faster, and it can run in real time.
+
+    There is a lot of potential to using openCV. In this season, I was even able to create a program that allows the
+    robot to play fetch with the rings (you could throw a ring, it would search the field with the camera, scoop them up,
+    and bring the ring back)
+
+    To see a bit more information on how this is programmed, I wrote a bit about it in this seasons engineering notebook here:
+    https://docs.google.com/document/d/1-j0yvgXHaooi7tYu9i3VjaMNbOaLf3KOqcL7OySlPBo/edit
+        See pages 30-38 (I didn't finish writing the document though, so some pieces are missing)
+
+ */
+
+//IIRC I used something like this to get openCV on the robot: https://github.com/OpenFTC/EasyOpenCV
+
+
+
 
 public class CameraClass extends OpenCvPipeline {
-
-    //TODO: include telemetry so I can test this stuff out on sunday.
-    //TODO: cut image to just a certain size
-    //TODO: get some coutour stuff working to recognize the location
+    //The open CV pipelines needs to implement the processFrame function, which takes a Mat as an input
         //Contour: https://docs.opencv.org/3.4/da/d0c/tutorial_bounding_rects_circles.html
-        //Create a bounding box baseed on tehe colors, and find the height of the bounding box
-    //TODO: can rewrite everything into the YCrCB channel, to avoid light issues
-    //TODO: take either the average of all centers, to take teh average of centers times the size of the bounding rectangle
-    //TODO: submat to take just certain parts
-    //TODO: get locatino based on the image.  
+        //Create a bounding box based on the colors, and find the height of the bounding box
+    //TODO: can rewrite everything into the YCrCB channel, to avoid light issues, if you want
+
+    //NOTE: All the comments below are from the original program, I'll probably update with some better comments later
+    //
+
 
     //NOTE: all the current values used in this aren't tested. I haven't yet worked out the correct search area, or optimized parameters for the hue, saturation, and value
     public double currentTotalColor = 0;
@@ -43,7 +58,7 @@ public class CameraClass extends OpenCvPipeline {
 
     boolean boxDraw = false;
     
-    
+
     
     //search area for the the stacks. Looks at the full stack of up to 4 rings. NEEDS FINE TUNING BASED ON CAMERA ORIENTATION
     Point left_search = new Point(
@@ -62,7 +77,7 @@ public class CameraClass extends OpenCvPipeline {
                 160);
     
     //Yellow Hue
-    public int Yhue = 15; //remember, only from 0-180 NOT 0-360
+    public int Yhue = 15; //remember, only from 0-180 for hue NOT 0-360
     //25 seems fairly optimized
     public int Ysat = 200;
     //This is not very optimized
@@ -204,6 +219,8 @@ public class CameraClass extends OpenCvPipeline {
         return edges; //this returns the edges as an image
         //example: https://docs.opencv.org/master/da/d22/tutorial_py_canny.html
     }
+
+    //This is a bit of weird fucntion, it is based off of an open cv program.
     public Object[] contours(Mat edges, Mat input) {
         //TODO: Return a struct that has a better shape
 
@@ -382,7 +399,8 @@ public class CameraClass extends OpenCvPipeline {
         }
         return new double[]{x,y,max};
     }
-    
+
+    //this last function is not used
     public ArrayList<Mat> toYCrCb(Mat input) {
 
         Mat tmp = new Mat();
