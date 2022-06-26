@@ -27,38 +27,42 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package us.ftcteam11574.teamcode2020;
+package us.ftcteam11574.teamcode2020.Examples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoController;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-/**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.util.*;
+
+/*
+    This file can be helpful for testing. It initializes some motors and keeps track of their position.
+    Since this is pretty barebones, it might be a good way to test out that encoders + motors are working properly.
  */
 
-@TeleOp(name="ServoTest", group="Iterative Opmode")
-public class ServoTest extends OpMode
+
+@TeleOp(name="DriveEncoderTest", group="Iterative Opmode")
+public class DriveTest extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private CRServo test = null;
+    private DcMotor FLDrive = null;
+    private DcMotor BLDrive = null;
+    private DcMotor FRDrive = null;
+    private DcMotor BRDrive = null;
+    ArrayList<Integer> BLPosition = new ArrayList<Integer>();
+    ArrayList<Integer> BRPosition = new ArrayList<Integer>();
+    ArrayList<Integer> FLPosition = new ArrayList<Integer>();
+    ArrayList<Integer> FRPosition = new ArrayList<Integer>();
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -70,10 +74,18 @@ public class ServoTest extends OpMode
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
-        test = hardwareMap.get(CRServo.class, "test");
+        FLDrive  = hardwareMap.get(DcMotor.class, "FLDrive");
+        FRDrive  = hardwareMap.get(DcMotor.class, "FRDrive");
+        BLDrive  = hardwareMap.get(DcMotor.class, "BLDrive");
+        BRDrive  = hardwareMap.get(DcMotor.class, "BRDrive");
 
-        test.setDirection(CRServo.Direction.REVERSE); //maybe this is the issue? idk...
 
+        // Most robots need the motor on one side to be reversed to drive forward
+        // Reverse the motor that runs backwards when connected directly to the battery
+        FLDrive.setDirection(DcMotor.Direction.REVERSE);
+        BLDrive.setDirection(DcMotor.Direction.REVERSE);
+        FRDrive.setDirection(DcMotor.Direction.FORWARD);
+        BRDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -99,20 +111,21 @@ public class ServoTest extends OpMode
      */
     @Override
     public void loop() {
-        if (gamepad1.a){
 
-            //Here's what the issue was:
-            //the Max PWM Signal Range for the HSR-1425CR Servo was 1200-1800µsec
-            //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
-            //(1200-500)/2000 = 0.35
-            //(1800 - 500)/2000 = 0.65
-            test.setPower(-0.65);
-        }
-        if (gamepad1.b){
-            test.setPower(0.65);
-        }
+        //Mecanum drive
+        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
+        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
+        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
 
+        //Record encoder positions
+        FRPosition.add(FRDrive.getCurrentPosition());
+        FLPosition.add(FLDrive.getCurrentPosition());
+        BRPosition.add(BRDrive.getCurrentPosition());
+        BLPosition.add(BLDrive.getCurrentPosition());
 
+        // Show the elapsed game time and wheel power.
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
     }
 
     /*
@@ -120,6 +133,10 @@ public class ServoTest extends OpMode
      */
     @Override
     public void stop() {
+        telemetry.addData("FLPosition", FLPosition);
+        telemetry.addData("FRPosition", FRPosition);
+        telemetry.addData("BLPosition", BLPosition);
+        telemetry.addData("BRPosition", BRPosition);
     }
 
 }

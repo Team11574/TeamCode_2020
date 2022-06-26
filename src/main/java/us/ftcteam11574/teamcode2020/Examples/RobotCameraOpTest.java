@@ -1,4 +1,4 @@
-package us.ftcteam11574.teamcode2020;
+package us.ftcteam11574.teamcode2020.Examples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -10,6 +10,12 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvInternalCamera;
 
 import us.ftcteam11574.teamcode2020.CameraClass;
+
+/*
+
+    This op mode can be helpful for testing out the camera, it iwll just return the color in front of it
+
+ */
 
 @TeleOp(name="Test Camera simple", group="Iterative Opmode")
 public class RobotCameraOpTest extends LinearOpMode {
