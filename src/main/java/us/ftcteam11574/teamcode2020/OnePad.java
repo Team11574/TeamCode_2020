@@ -29,15 +29,12 @@
 
 package us.ftcteam11574.teamcode2020;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -61,8 +58,8 @@ import static android.os.SystemClock.sleep;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Final TeleOp", group="Iterative Opmode")
-public class TeleOp23 extends OpMode
+@TeleOp(name="TeleOp23 One Pad", group="Iterative Opmode")
+public class OnePad extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -72,34 +69,24 @@ public class TeleOp23 extends OpMode
     private DcMotor BRDrive = null;
     private DcMotor Intake = null;
     private DcMotor Flywheel = null;
+    private Servo Gripper = null;
+    private CRServo Extender = null;
     private DcMotor Wobble = null;
     private DcMotor Stationary = null;
     private Servo Gate = null;
-    private Servo Kick = null;
-    private CRServo Roller = null;
-    private CRServo Drop = null;
-    private VoltageSensor batteryVoltageSensor;
 
     private double FlywheelPower;
     boolean aPressed = false;
-    boolean bPressed = false;
-    boolean intakeOn = false;
-    boolean shot = false;
-    double mult = 1;
-    double driveCoefficient = 1.0;
+    boolean intakeOn = true;
 
-    double timeSinceShot = 0;
-
-    private int sleepTime = 400;
+    boolean yPressed = false;
+    boolean yMode = false;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-
-
-
         telemetry.addData("Status", "Initialized");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -114,26 +101,15 @@ public class TeleOp23 extends OpMode
         Flywheel = hardwareMap.get(DcMotor.class, "Flywheel");
         Wobble = hardwareMap.get(DcMotor.class, "Wobble");
         Gate = hardwareMap.get(Servo.class, "Gate");
-        Kick = hardwareMap.get(Servo.class, "Kick");
-        Roller = hardwareMap.get(CRServo.class, "Roller");
-        Drop = hardwareMap.get(CRServo.class, "Drop");
-        batteryVoltageSensor = hardwareMap.voltageSensor.iterator().next();
+
 
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
-
-        FLDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        FRDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BLDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        BRDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-
         FLDrive.setDirection(DcMotor.Direction.REVERSE);
         BLDrive.setDirection(DcMotor.Direction.REVERSE);
         FRDrive.setDirection(DcMotor.Direction.FORWARD);
         BRDrive.setDirection(DcMotor.Direction.FORWARD);
-        Stationary.setDirection(DcMotor.Direction.REVERSE);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -163,115 +139,63 @@ public class TeleOp23 extends OpMode
 
 
         //Flywheel setting
-        Flywheel.setPower( gamepad2.right_stick_y * Math.min(1,(13.1 / batteryVoltageSensor.getVoltage())));
-
-        Wobble.setPower(gamepad2.left_stick_y*.7); //initialize to the correct position.
-
+        Flywheel.setPower(gamepad2.right_stick_y);
+        Wobble.setPower(gamepad2.left_stick_y); //initialize to the correct position.
 
         //Mecanum drive
 
-        if(gamepad1.x){
-            driveCoefficient = 0.3;
-
-        }
-        if(gamepad1.y){
-            driveCoefficient = 1.0;
-        }
-
-        FRDrive.setPower((gamepad1.right_stick_y + gamepad1.right_stick_x) * driveCoefficient);
-        BRDrive.setPower((gamepad1.right_stick_y - gamepad1.right_stick_x)*driveCoefficient);
-        FLDrive.setPower((gamepad1.left_stick_y - gamepad1.left_stick_x)*driveCoefficient);
-        BLDrive.setPower((gamepad1.left_stick_y + gamepad1.left_stick_x)* driveCoefficient);
+        FRDrive.setPower(gamepad1.right_stick_y + gamepad1.right_stick_x);
+        BRDrive.setPower(gamepad1.right_stick_y - gamepad1.right_stick_x);
+        FLDrive.setPower(gamepad1.left_stick_y - gamepad1.left_stick_x);
+        BLDrive.setPower(gamepad1.left_stick_y + gamepad1.left_stick_x);
 
 
-
-
-        //This gives us the option to drive without having to use the tank drive style
-        //it seperates the rotation and motion into two seperate joysticks, which can be easier on the driver
-        //
         /*
-        double[] powers = motorPower.calcMotorsMax(-gamepad1.right_stick_x,gamepad1.right_stick_y, -gamepad1.left_stick_y);
+        double[] powers = motorPower.calcMotorsFull(gamepad1.right_stick_x,gamepad1.right_stick_y, gamepad1.left_stick_y);
+        FLDrive.setPower(powers[0]);
+        BLDrive.setPower(powers[1]);
+        BRDrive.setPower(powers[2]);
+        FRDrive.setPower(powers[3]);
+        */
 
-        double motorPow = Math.max(Math.abs(gamepad1.right_stick_x)+Math.abs(gamepad1.right_stick_y) ,Math.abs(gamepad1.left_stick_y));
-        FLDrive.setPower(powers[0] * motorPow);
-        BLDrive.setPower(powers[1]* motorPow);
-        BRDrive.setPower(powers[2]* motorPow);
-        FRDrive.setPower(powers[3]* motorPow);
-        telemetry.addData("Powers",""+ powers[0] + "," +powers[1] + "," + powers[2]+"," + powers[3]);
+        //Always on intake
+        Intake.setPower(-0.8);
+        Stationary.setPower(0.8);
 
-         */
-
-
-        
 
         //Calc for limiting REV hub's output: (PWM - 500)/2000 for HSR-1425CR Servo
         //(1200-500)/2000 = 0.35
         //(1800 - 500)/2000 = 0.65
-        telemetry.addData("A on", intakeOn);
-        if(gamepad1.b && !bPressed) {
-            if(mult == 0.8) {
-                mult = 1;
-            }
-            else {
-                mult = 0.8;
-            }
-            bPressed = true;
-        }
-        if(!gamepad1.b) {
-            bPressed = false;
-        }
-        if(!aPressed && gamepad2.y) {
+
+        if(!aPressed && gamepad1.a) {
             aPressed = true;
             intakeOn = !intakeOn;
         }
-        if(!gamepad2.y) {
+        if(!gamepad1.a) {
             aPressed = false;
         }
 
         if(intakeOn){
-            Roller.setPower(0.65);
             Intake.setPower(-0.8);
             Stationary.setPower(0.8);
         }
         else {
-            Roller.setPower(0.0 );
-            Intake.setPower(gamepad2.dpad_down?-.42134:0);
-            Stationary.setPower(gamepad2.dpad_down?-.42134:0);
-
+            Intake.setPower(0);
+            Stationary.setPower(0);
         }
-        //&& false is temporary.
-        if(false && gamepad1.x && runtime.time()-timeSinceShot > 1) { //if you have held the button for more than .5 seconds, then continue with flywheel power
-            //if you've continued to hold the button, then only move the Kick into a different position
-            timeSinceShot = runtime.time();
+        if(!yPressed && gamepad1.y) {
+            yPressed = true;
+            yMode = !yMode;
         }
-        else if(gamepad2.x){
-            //shootRing();
-            Kick.setPosition(0.5);
-            shot = true;
-        }
-        else {
-            Kick.setPosition(0.8);
-            shot = false;
-            timeSinceShot = runtime.time();
+        if(! gamepad1.y) {
+            yPressed = false;
         }
 
-
-        if(gamepad2.a){
-            Gate.setPosition(0.5); //Finished
+        if(yMode){
+            Gate.setPosition(0.8);
         }
-        if(gamepad2.b){
-            Gate.setPosition(.899); //Finished
-            //telemetry.addData("range", gamepad2.right_stick_x);
-        }
-        if(gamepad1.a){
-            Drop.setPower(0.65);
-            sleep(100);
-            Drop.setPower(0.0);
-        }
-        if(gamepad1.b){
-            Drop.setPower(-0.65);
-            sleep(100);
-            Drop.setPower(0.0);
+        else{
+            Gate.setPosition(0.5);
         }
 
 
@@ -279,11 +203,6 @@ public class TeleOp23 extends OpMode
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("FL",FLDrive.getCurrentPosition());
-        telemetry.addData("FR",FRDrive.getCurrentPosition());
-        telemetry.addData("BL",BLDrive.getCurrentPosition());
-        telemetry.addData("BR",BRDrive.getCurrentPosition());
-
     }
 
     /*
@@ -293,17 +212,5 @@ public class TeleOp23 extends OpMode
     public void stop() {
 
     }
-    public void shootRing() { //this will trigger after some button has been pressed--it is blocking!
-
-        //Flywheel.setPower(-1); //this coudl be fine tuned to the correct power
-        //sleep(1200); //sleeps for some specific amount of time
-        Kick.setPosition(0.8);
-        sleep(500);
-        Kick.setPosition(0.5);
-        sleep(500);
-
-        //maybe holding the button shoots more rings
-    }
-
 
 }

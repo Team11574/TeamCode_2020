@@ -7,19 +7,13 @@
 //reduced code down to only 360 lines, used to be 516
 package us.ftcteam11574.teamcode2020;
 
-/*
-
-
-
- */
-
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import java.util.Arrays;
 
 @Disabled
-public class Skyblock {
+class Skyblock {
     static final int dwn_sample = 3; //3 probably works best
     static final int a = 30/dwn_sample; //size of read of pixels
     static final int b = 30/dwn_sample; //size of read of pixels
@@ -27,7 +21,7 @@ public class Skyblock {
     //a little less accurate with acc = 2, but its much faster
     static int width;
     static int height;
-    public static color[] pixels;
+    static color[] pixels;
     static final int acc1 = 60/dwn_sample;  //different acc etc //works fine at 40, 60 might be a bit large, but we really need speed here
     static final int acc2 = acc1;
     static final int x_size = 200/dwn_sample; //test different sizes etc
@@ -91,7 +85,7 @@ public class Skyblock {
 
 
 
-    public static void readImage(int[][] rgb, int width_, int height_) {
+    static void readImage(int[][] rgb, int width_, int height_) {
 
         int tmp = 0;
         width = width_;
@@ -110,7 +104,7 @@ public class Skyblock {
 
 
 
-    public static double[][] score(color[] pixels) {
+    static double[][] score(color[] pixels) {
         //its possible that I could make pixel info smaller, since many of the values (acc^2 to be exact), are reduant for every pixel
         //
         double[][] pixel_info = new double[pixels.length][3]; //I could make this a float to improve speed, since floats are smaller
@@ -145,7 +139,7 @@ public class Skyblock {
         }
         return pixel_info;
     }
-    public static double[][] bestRegion(double[][] pixel_info) {
+    static double[][] bestRegion(double[][] pixel_info) {
 
         double[][] vals = new double[ (height-y_size)/acc1 * (width-x_size/acc2) ][3];
         int tmp = 0;
@@ -160,7 +154,7 @@ public class Skyblock {
             }}
         return vals;
     }
-    public static double combinePixelInfo(double[][] pass, int xs, int ys, int x, int y,int[] topn) {
+    static double combinePixelInfo(double[][] pass, int xs, int ys, int x, int y,int[] topn) {
         double[][] info = getPixels(pass, xs,ys, x, y);
 		  /* Slower method, but more accruate
 		  double top0 = skyblock.sum(skyblock.topn(info,0,topn[0])) / Math.pow(topn[0],.85) * 3;
@@ -348,56 +342,4 @@ public class Skyblock {
 
 
 
-
 }
-class color {
-    int red;
-    int green;
-    int blue;
-    color(int r, int g, int b) {
-        red=r;
-        green = g;
-        blue = b;
-    }
-
-    void setColor(byte[] bytes) {
-        //https://github.com/jeremycole/GoldMineralLocator/blob/master/src/us/jcole/opencv/GoldMineralLocator.java
-
-        blue = (int) ((bytes[0])& 0xff);
-        green = (int) ((bytes[1])& 0xff);
-        red = (int) ((bytes[2])& 0xff);
-    }
-    static int readBin(byte bin) {
-        return readBin(String.format("%8s", Integer.toBinaryString(bin & 0xFF)).replace(' ', '0'));
-    }
-    static int readBin(String bin) {
-        int res = 0;
-        int val = 1 << (bin.length()-1);
-        for (int i = 0; bin.length() > i; i++) {
-            if(bin.charAt(i) == '1') {
-                res += val;
-            }
-            val = (val >> 1);
-        }
-        return res;
-    }
-    int red() {
-        return red;
-    }
-    int green() {
-        return green;
-    }
-    int blue() {
-        return blue;
-    }
-    static byte[] getColor(byte[] pixels, int id) {
-        return new byte[]{pixels[id*3],pixels[id*3 + 1],pixels[id*3+2]}; //assume no Alpha channel
-    }
-    static int cast(byte val) {
-        return readBin(val);
-    }
-
-}
-
-
-

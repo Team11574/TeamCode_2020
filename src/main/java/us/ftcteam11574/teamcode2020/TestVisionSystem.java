@@ -26,16 +26,6 @@ import java.util.ArrayList;
 import us.ftcteam11574.teamcode2020.CameraClass;
 import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
 
-/*
-
-    I'm not sure if this code has the new enough code to work, but this previously contained the code that allowed the robot to play
-    fetch with the rings. Since the camera was mounted on the side, it looks for rings,a nd positions itself until the rings are exactly in
-    the center of its view. It computes the size of the ring to figure out the distance, then turns 90 and heads towards it, and intakes
-    the ring
-
- */
-
-
 @TeleOp(name="Test Vision", group="Iterative Opmode")
 public class TestVisionSystem extends LinearOpMode {
 

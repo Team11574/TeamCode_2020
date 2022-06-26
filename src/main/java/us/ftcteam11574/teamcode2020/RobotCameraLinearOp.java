@@ -1,4 +1,4 @@
-package us.ftcteam11574.teamcode2020.Examples;
+package us.ftcteam11574.teamcode2020;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -25,16 +25,8 @@ import java.util.Arrays;
 
 import us.ftcteam11574.teamcode2020.CameraClass;
 import us.ftcteam11574.teamcode2020.drive.SampleMecanumDrive;
-import us.ftcteam11574.teamcode2020.motorPower;
 
 import static android.os.SystemClock.sleep;
-
-/*
-
-    This is the autonomous from the first season. It uses the vuforia camera, so its not as useful, however it might be useful to look
-    at if you decide you want to use vuforia over openCV
-
- */
 
 @TeleOp(name="Test Camera simple2 (THIS)", group="Iterative Opmode")
 public class RobotCameraLinearOp extends LinearOpMode {
